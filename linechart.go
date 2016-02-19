@@ -41,7 +41,7 @@ var rSingleBraille = [4]rune{'\u2880', '⠠', '⠐', '⠈'}
 // gives 2x X resolution and 4x Y resolution over dot mode.
 /*
   lc := termui.NewLineChart()
-  lc.Border.Label = "braille-mode Line Chart"
+  lc.BorderLabel = "braille-mode Line Chart"
   lc.Data["name'] = [1.2, 1.3, 1.5, 1.7, 1.5, 1.6, 1.8, 2.0]
   lc.Width = 50
   lc.Height = 12
@@ -215,7 +215,6 @@ func (lc *LineChart) calcLabelX() {
 			if l >= len(lc.DataLabels) {
 				break
 			}
-
 			s := str2runes(lc.DataLabels[l])
 			w := strWidth(lc.DataLabels[l])
 			if l+w <= lc.axisXWidth {
@@ -233,21 +232,26 @@ func (lc *LineChart) calcLabelX() {
 				lc.labelX = append(lc.labelX, s)
 			}
 			l += w + lc.axisXLabelGap
-
 		}
 	}
 }
 
-func shortenFloatVal(x float64) string {
-	s := fmt.Sprintf("%.2f", x)
-	if len(s)-3 > 3 {
-		s = fmt.Sprintf("%.2e", x)
+func (lc *LineChart) formatYVal(val float64) string {
+	span := lc.topValue - lc.bottomValue
+	if span <= 100 {
+		return fmt.Sprintf("%.1f", val)
+	}
+	if span <= 1000 {
+		return fmt.Sprintf("%d", int64(val+0.5))
+	}
+	if span <= 10000 {
+		return fmt.Sprintf("%dK", int64((val+0.5)/1000))
+	}
+	if span <= 1000000 {
+		return fmt.Sprintf("%dM", int64((val+0.5)/1000000))
 	}
 
-	if x < 0 {
-		s = fmt.Sprintf("%.2f", x)
-	}
-	return s
+	return fmt.Sprintf("%dG", int64((val+0.5)/1000000000))
 }
 
 func (lc *LineChart) calcLabelY() {
@@ -259,7 +263,7 @@ func (lc *LineChart) calcLabelY() {
 	lc.labelY = make([][]rune, n)
 	maxLen := 0
 	for i := 0; i < n; i++ {
-		s := str2runes(shortenFloatVal(lc.bottomValue + float64(i)*span/float64(n)))
+		s := str2runes(lc.formatYVal(lc.bottomValue + float64(i)*span/float64(n)))
 		if len(s) > maxLen {
 			maxLen = len(s)
 		}
@@ -270,21 +274,17 @@ func (lc *LineChart) calcLabelY() {
 }
 
 func (lc *LineChart) calcLayout() {
+	// TODO - figure out how to smooth out large increase/decrease of Y scale over time
+	//        this makes the Y range strictly track the visible Y values, which could be erratic
+	lc.minY = math.Inf(1)
+	lc.maxY = math.Inf(-1)
+	lc.bottomValue = math.Inf(1)
+	lc.topValue = math.Inf(-1)
+
 	for _, seriesData := range lc.Data {
 		if seriesData == nil || len(seriesData) == 0 {
 			continue
 		}
-		// set datalabels if not provided
-		if lc.DataLabels == nil || len(lc.DataLabels) == 0 {
-			lc.DataLabels = make([]string, len(seriesData))
-			for i := range seriesData {
-				lc.DataLabels[i] = fmt.Sprint(i)
-			}
-		}
-
-		// lazy increase, to avoid y shaking frequently
-		lc.minY = seriesData[0]
-		lc.maxY = seriesData[0]
 
 		// valid visible range
 		vrange := lc.innerArea.Dx()
@@ -319,6 +319,21 @@ func (lc *LineChart) calcLayout() {
 			if lc.topValue > lc.YCeil {
 				lc.topValue = lc.YCeil
 			}
+		}
+	}
+
+	// set datalabels if not provided
+	if lc.DataLabels == nil || len(lc.DataLabels) == 0 {
+		var xrange int
+		if lc.Mode == "braille" {
+			xrange = 2 * lc.innerArea.Dx()
+		} else {
+			xrange = lc.innerArea.Dx()
+		}
+
+		lc.DataLabels = make([]string, xrange)
+		for i := 0; i < xrange; i++ {
+			lc.DataLabels[i] = fmt.Sprint(i)
 		}
 	}
 
