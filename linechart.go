@@ -63,18 +63,19 @@ type LineChart struct {
 	drawingY         int
 	axisYHeight      int
 	axisXWidth       int
-	axisYLabelGap    int
-	axisXLabelGap    int
-	topValue         float64
-	bottomValue      float64
+	axisYLabelGap    int     // space between each Y axis label
+	axisXLabelGap    int     // space between each X axis label
+	topValue         float64 // top visible value, usually a bit lrager than maxY
+	bottomValue      float64 // bottom visible value, usually smaller than minY
 	labelX           [][]rune
 	labelY           [][]rune
 	labelYSpace      int
-	maxY             float64
-	minY             float64
+	maxY             float64 // largest value found in the data
+	minY             float64 // smallest value found in the data
 	YPadding         float64
-	YFloor           float64
-	YCeil            float64
+	YFloor           float64 // min Y value to display, use -Inf for "auto"
+	YCeil            float64 // max Y value to display, use +Inf for "auto"
+	Name             string  // not used internally, but useful in many programs
 }
 
 // NewLineChart returns a new LineChart with current theme.
@@ -238,20 +239,20 @@ func (lc *LineChart) calcLabelX() {
 
 func (lc *LineChart) formatYVal(val float64) string {
 	span := lc.topValue - lc.bottomValue
-	if span <= 100 {
+	if span <= 10 {
 		return fmt.Sprintf("%.1f", val)
 	}
 	if span <= 1000 {
 		return fmt.Sprintf("%d", int64(val+0.5))
 	}
-	if span <= 10000 {
-		return fmt.Sprintf("%dK", int64((val+0.5)/1000))
+	if span <= 100000 {
+		return fmt.Sprintf("%.1fK", val/1000)
 	}
 	if span <= 1000000 {
-		return fmt.Sprintf("%dM", int64((val+0.5)/1000000))
+		return fmt.Sprintf("%.1fM", val/1000000)
 	}
 
-	return fmt.Sprintf("%dG", int64((val+0.5)/1000000000))
+	return fmt.Sprintf("%.1fG", val/1000000000)
 }
 
 func (lc *LineChart) calcLabelY() {
@@ -273,9 +274,12 @@ func (lc *LineChart) calcLabelY() {
 	lc.labelYSpace = maxLen
 }
 
+// calcLayout computes the ranges of the data and sets the visible range to cover it
 func (lc *LineChart) calcLayout() {
 	// TODO - figure out how to smooth out large increase/decrease of Y scale over time
-	//        this makes the Y range strictly track the visible Y values, which could be erratic
+	//        this makes the Y range strictly track the visible Y values, which could be erratic.
+	//        The tricky case here is when an unusually large value scales way up and we don't
+	//        know when to scale back down.
 	lc.minY = math.Inf(1)
 	lc.maxY = math.Inf(-1)
 	lc.bottomValue = math.Inf(1)
@@ -303,23 +307,24 @@ func (lc *LineChart) calcLayout() {
 				lc.minY = v
 			}
 		}
+	}
 
-		span := lc.maxY - lc.minY
+	span := lc.maxY - lc.minY
 
-		// allow some padding unless we are beyond the flor/ceil
+	if lc.YFloor == math.Inf(-1) {
 		if lc.minY <= lc.bottomValue {
 			lc.bottomValue = lc.minY - lc.YPadding*span
-			if lc.bottomValue < lc.YFloor {
-				lc.bottomValue = lc.YFloor
-			}
 		}
+	} else {
+		lc.bottomValue = lc.YFloor
+	}
 
+	if lc.YCeil == math.Inf(1) {
 		if lc.maxY >= lc.topValue {
 			lc.topValue = lc.maxY + lc.YPadding*span
-			if lc.topValue > lc.YCeil {
-				lc.topValue = lc.YCeil
-			}
 		}
+	} else {
+		lc.topValue = lc.YCeil
 	}
 
 	// set datalabels if not provided
