@@ -69,6 +69,7 @@ type Input struct {
 	commands        []string
 	cursorLineIndex int
 	cursorLinePos   int
+	commandIndex    int
 }
 
 // NewInput returns a new, initialized Input object. The method receives an initial prefix for the input (if any)
@@ -86,6 +87,7 @@ func NewInput(prefix string, isMultiLine bool, isCommandBox bool) *Input {
 		OutputPrefix:    "",
 		cursorLineIndex: 0,
 		cursorLinePos:   0,
+		commandIndex:    0,
 	}
 
 	if prefix != "" {
@@ -170,12 +172,10 @@ func (i *Input) Text() string {
 func (i *Input) AppendLine(text string) {
 	i.addString(text)
 	i.addString(NEW_LINE)
-	i.addString(i.Prefix + " ")
+	if i.Prefix != "" {
+		i.addString(i.Prefix + " ")
+	}
 	Render(i)
-}
-
-func (i *Input) SetPrefix(prefix string) {
-	i.Prefix = prefix
 }
 
 // Lines returns the slice of strings with the content of the input field. By default lines are separated by \n
@@ -183,6 +183,7 @@ func (i *Input) Lines() []string {
 	return i.lines
 }
 
+// LastCommand returns the last entered command
 func (i *Input) LastCommand() string {
 	return i.commands[len(i.commands)-1]
 }
@@ -280,7 +281,41 @@ func (i *Input) addString(key string) {
 	}
 }
 
+func (i *Input) overwriteCurrentLine(text string) {
+
+	var l string
+	if i.Prefix != "" {
+		l = i.Prefix + " " + text
+	} else {
+		l = text
+	}
+	i.lines[i.cursorLineIndex] = l
+	i.cursorLinePos = len(l) // Set cursor to end of line
+	Render(i)
+
+}
+
 func (i *Input) moveUp() {
+	// Different behavoir when being a terminal -> get the last command
+	if i.IsCommandBox {
+		i.commandIndex++
+
+		// When there are no commands in buffer..
+		if len(i.commands) == 0 {
+			return
+		}
+
+		// Roll-over when upper commandlimit is reached
+		if i.commandIndex > len(i.commands) {
+			i.commandIndex = len(i.commands)
+		}
+
+		cmd := i.commands[len(i.commands)-i.commandIndex]
+		//i.addString(cmd)
+		i.overwriteCurrentLine(cmd)
+		return
+	}
+
 	// if we are already on the first line then just move the cursor to the beginning
 	if i.cursorLineIndex == 0 {
 		i.cursorLinePos = 0
@@ -299,6 +334,24 @@ func (i *Input) moveUp() {
 }
 
 func (i *Input) moveDown() {
+	// Different behavoir when being a terminal -> get the last command
+	if i.IsCommandBox {
+		// When there are no commands in buffer..
+		if len(i.commands) == 0 {
+			return
+		}
+		i.commandIndex--
+
+		if i.commandIndex <= 0 {
+			i.commandIndex = 1
+		}
+
+		cmd := i.commands[len(i.commands)-i.commandIndex]
+		//i.addString(cmd)
+		i.overwriteCurrentLine(cmd)
+		return
+	}
+
 	// we are already on the last line, we just need to move the position to the end of the line
 	if i.cursorLineIndex == len(i.lines)-1 {
 		i.cursorLinePos = len(i.lines[i.cursorLineIndex])
@@ -348,6 +401,7 @@ func (i *Input) enter() {
 		// Get everything in this line and add it to the command buffer
 		l := i.lines[i.cursorLineIndex]
 		i.commands = append(i.commands, l[len(i.Prefix)+1:])
+		i.commandIndex = 0
 	}
 
 	i.addString(NEW_LINE)
