@@ -1,9 +1,10 @@
 package termui
 
 import (
-	"github.com/nsf/termbox-go"
 	"strconv"
 	"strings"
+
+	"github.com/nsf/termbox-go"
 )
 
 // default mappings between /sys/kbd events and multi-line inputs
@@ -49,10 +50,13 @@ type Input struct {
 	TextFgColor  Attribute
 	TextBgColor  Attribute
 	IsCapturing  bool
+	IsCommandBox bool
 	IsMultiLine  bool
 	TextBuilder  TextBuilder
 	SpecialChars map[string]string
 	ShowLineNo   bool
+	Prefix       string
+	OutputPrefix string
 	Name         string
 	CursorX      int
 	CursorY      int
@@ -62,27 +66,31 @@ type Input struct {
 
 	// internal vars
 	lines           []string
+	commands        []string
 	cursorLineIndex int
 	cursorLinePos   int
 }
 
-// NewInput returns a new, initialized Input object. The method receives the initial content for the input (if any)
+// NewInput returns a new, initialized Input object. The method receives an initial prefix for the input (if any)
 // and whether it should be initialized as a multi-line innput field or not
-func NewInput(s string, isMultiLine bool) *Input {
+func NewInput(prefix string, isMultiLine bool, isCommandBox bool) *Input {
 	textArea := &Input{
-		Block:       *NewBlock(),
-		TextFgColor: ThemeAttr("par.text.fg"),
-		TextBgColor: ThemeAttr("par.text.bg"),
-		TextBuilder: NewMarkdownTxBuilder(),
-		IsMultiLine: isMultiLine,
-		ShowLineNo:  false,
-
+		Block:           *NewBlock(),
+		TextFgColor:     ThemeAttr("par.text.fg"),
+		TextBgColor:     ThemeAttr("par.text.bg"),
+		TextBuilder:     NewMarkdownTxBuilder(),
+		IsMultiLine:     isMultiLine,
+		IsCommandBox:    isCommandBox,
+		ShowLineNo:      false,
+		Prefix:          prefix,
+		OutputPrefix:    "",
 		cursorLineIndex: 0,
 		cursorLinePos:   0,
 	}
 
-	if s != "" {
-		textArea.SetText(s)
+	if prefix != "" {
+		textArea.addString(prefix)
+		textArea.cursorLinePos = len(prefix)
 	}
 
 	if isMultiLine {
@@ -113,6 +121,8 @@ func (i *Input) StartCapture() {
 				i.moveRight()
 			case "C-8":
 				i.backspace()
+			case "<enter>":
+				i.enter()
 			default:
 				// If it's a CTRL something we don't handle then just ignore it
 				if strings.HasPrefix(key, "C-") {
@@ -120,11 +130,12 @@ func (i *Input) StartCapture() {
 				}
 				newString := i.getCharString(key)
 				i.addString(newString)
+
 			}
 			if i.Name == "" {
 				SendCustomEvt("/input/kbd", i.getInputEvt(key))
 			} else {
-				SendCustomEvt("/input/" + i.Name + "/kbd", i.getInputEvt(key))
+				SendCustomEvt("/input/"+i.Name+"/kbd", i.getInputEvt(key))
 			}
 
 			Render(i)
@@ -155,13 +166,25 @@ func (i *Input) Text() string {
 	}
 }
 
-func (i *Input) SetText(text string) {
-	i.lines = strings.Split(text, NEW_LINE)
+// AppendLine appends and shows the text and a newline
+func (i *Input) AppendLine(text string) {
+	i.addString(text)
+	i.addString(NEW_LINE)
+	i.addString(i.Prefix + " ")
+	Render(i)
+}
+
+func (i *Input) SetPrefix(prefix string) {
+	i.Prefix = prefix
 }
 
 // Lines returns the slice of strings with the content of the input field. By default lines are separated by \n
 func (i *Input) Lines() []string {
 	return i.lines
+}
+
+func (i *Input) LastCommand() string {
+	return i.commands[len(i.commands)-1]
 }
 
 // Private methods for the input field
@@ -320,6 +343,19 @@ func (i *Input) moveRight() {
 	i.cursorLinePos++
 }
 
+func (i *Input) enter() {
+	if i.IsCommandBox {
+		// Get everything in this line and add it to the command buffer
+		l := i.lines[i.cursorLineIndex]
+		i.commands = append(i.commands, l[len(i.Prefix)+1:])
+	}
+
+	i.addString(NEW_LINE)
+	i.addString(i.OutputPrefix)
+
+	i.CursorY++
+}
+
 // Buffer implements Bufferer interface.
 func (i *Input) Buffer() Buffer {
 	buf := i.Block.Buffer()
@@ -382,6 +418,7 @@ func (i *Input) Buffer() Buffer {
 			y++
 			n++
 			x = 0 // set x = 0
+
 			continue
 		}
 		buf.Set(i.innerArea.Min.X+x+textXOffset, i.innerArea.Min.Y+y, cs[n])
@@ -395,7 +432,7 @@ func (i *Input) Buffer() Buffer {
 		cursorXOffset++
 	}
 
-	cursorYOffset := i.Y//   termui.TermHeight() - i.innerArea.Dy()
+	cursorYOffset := i.Y //   termui.TermHeight() - i.innerArea.Dy()
 	if i.BorderTop {
 		cursorYOffset++
 	}
@@ -404,8 +441,9 @@ func (i *Input) Buffer() Buffer {
 	} else {
 		cursorYOffset += i.cursorLineIndex
 	}
+
 	if i.IsCapturing {
-		i.CursorX = i.cursorLinePos+cursorXOffset
+		i.CursorX = i.cursorLinePos + cursorXOffset
 		i.CursorY = cursorYOffset
 		termbox.SetCursor(i.cursorLinePos+cursorXOffset, cursorYOffset)
 	}
