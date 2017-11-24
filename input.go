@@ -121,7 +121,7 @@ func (i *Input) StartCapture() {
 				i.moveLeft()
 			case "<right>":
 				i.moveRight()
-			case "C-8":
+			case "C-8", "<backspace>":
 				i.backspace()
 			case "<enter>":
 				i.enter()
@@ -199,7 +199,10 @@ func (i *Input) backspace() {
 	}
 
 	// at the beginning of a line somewhere in the buffer
-	if i.cursorLinePos == 0 {
+	if i.cursorLinePos == 0 || (i.Prefix != "" && i.cursorLinePos == len(i.Prefix)+1) && !i.IsCommandBox {
+		if i.cursorLineIndex-1 < len(i.lines) {
+			return
+		}
 		prevLine := i.lines[i.cursorLineIndex-1]
 		// remove the newline character from the prevline
 		prevLine = prevLine[:len(curLine)-1] + curLine
@@ -218,6 +221,12 @@ func (i *Input) backspace() {
 
 	// I'm in the middle of a line
 	i.lines[i.cursorLineIndex] = curLine[:i.cursorLinePos-1] + curLine[i.cursorLinePos:]
+
+	// Do not remove the prefix
+	if i.Prefix != "" && i.cursorLinePos == len(i.Prefix)+1 {
+		return
+	}
+
 	i.cursorLinePos--
 }
 
@@ -370,7 +379,7 @@ func (i *Input) moveDown() {
 
 func (i *Input) moveLeft() {
 	// if we are at the beginning of the line move the cursor to the previous line
-	if i.cursorLinePos == 0 {
+	if i.cursorLinePos == 0 && !i.IsCommandBox {
 		origLine := i.cursorLineIndex
 		i.moveUp()
 		if origLine > 0 {
@@ -384,7 +393,7 @@ func (i *Input) moveLeft() {
 
 func (i *Input) moveRight() {
 	// if we are at the end of the line move to the next
-	if i.cursorLinePos >= len(i.lines[i.cursorLineIndex]) {
+	if i.cursorLinePos >= len(i.lines[i.cursorLineIndex]) && !i.IsCommandBox {
 		origLine := i.cursorLineIndex
 		i.moveDown()
 		if origLine < len(i.lines)-1 {
