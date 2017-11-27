@@ -200,8 +200,8 @@ func (i *Input) backspace() {
 	}
 
 	// at the beginning of a line somewhere in the buffer
-	if i.cursorLinePos == 0 || (i.Prefix != "" && i.cursorLinePos == len(i.Prefix)+1) && !i.IsCommandBox {
-		if i.cursorLineIndex-1 < len(i.lines) {
+	if i.cursorLinePos == 0 || (i.Prefix != "" && i.cursorLinePos == len(i.Prefix)+1) {
+		if i.IsCommandBox || i.cursorLineIndex-1 < len(i.lines) {
 			return
 		}
 		prevLine := i.lines[i.cursorLineIndex-1]
