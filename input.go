@@ -67,6 +67,7 @@ type Input struct {
 	// internal vars
 	lines           []string
 	commands        []string
+	savedCommand    string
 	cursorLineIndex int
 	cursorLinePos   int
 	commandIndex    int
@@ -291,7 +292,6 @@ func (i *Input) addString(key string) {
 }
 
 func (i *Input) overwriteCurrentLine(text string) {
-
 	var l string
 	if i.Prefix != "" {
 		l = i.Prefix + " " + text
@@ -301,19 +301,28 @@ func (i *Input) overwriteCurrentLine(text string) {
 	i.lines[i.cursorLineIndex] = l
 	i.cursorLinePos = len(l) // Set cursor to end of line
 	Render(i)
+}
 
+func (i *Input) getCurrentLine() string {
+	l := i.lines[i.cursorLineIndex]
+	if i.Prefix != "" {
+		l = l[len(i.Prefix)+1:]
+	}
+	return l
 }
 
 func (i *Input) moveUp() {
-	// Different behavoir when being a terminal -> get the last command
+	// Different behavior when being a terminal -> get the last command
 	if i.IsCommandBox {
-		i.commandIndex++
-
 		// When there are no commands in buffer..
 		if len(i.commands) == 0 {
 			return
 		}
 
+		if i.commandIndex == 0 {
+			i.savedCommand = i.getCurrentLine()
+		}
+		i.commandIndex++
 		// Roll-over when upper commandlimit is reached
 		if i.commandIndex > len(i.commands) {
 			i.commandIndex = len(i.commands)
@@ -343,19 +352,21 @@ func (i *Input) moveUp() {
 }
 
 func (i *Input) moveDown() {
-	// Different behavoir when being a terminal -> get the last command
+	// Different behavior when being a terminal -> get command after selected command
 	if i.IsCommandBox {
-		// When there are no commands in buffer..
-		if len(i.commands) == 0 {
+		// When there are no commands in buffer after this command..
+		if i.commandIndex == 0 {
 			return
 		}
-		i.commandIndex--
 
-		if i.commandIndex <= 0 {
-			i.commandIndex = 1
+		i.commandIndex--
+		var cmd string
+		if i.commandIndex == 0 {
+			cmd = i.savedCommand
+		} else {
+			cmd = i.commands[len(i.commands)-i.commandIndex]
 		}
 
-		cmd := i.commands[len(i.commands)-i.commandIndex]
 		//i.addString(cmd)
 		i.overwriteCurrentLine(cmd)
 		return
