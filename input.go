@@ -171,11 +171,14 @@ func (i *Input) Text() string {
 
 // AppendLine appends and shows the text and a newline
 func (i *Input) AppendLine(text string) {
-	i.addString(text)
-	i.addString(NEW_LINE)
+	for _,line := range strings.Split(text,"\n") {
+		i.addString(line)
+		i.addString(NEW_LINE)
+	}
 	if i.Prefix != "" {
 		i.addString(i.Prefix + " ")
 	}
+
 	Render(i)
 }
 
@@ -419,8 +422,7 @@ func (i *Input) moveRight() {
 func (i *Input) enter() {
 	if i.IsCommandBox {
 		// Get everything in this line and add it to the command buffer
-		l := i.lines[i.cursorLineIndex]
-		i.commands = append(i.commands, l[len(i.Prefix)+1:])
+		i.commands = append(i.commands, i.getCurrentLine())
 		i.commandIndex = 0
 	}
 
