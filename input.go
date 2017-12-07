@@ -47,19 +47,20 @@ type EvtInput struct {
 // Name: When specified, the Input uses its name to propagate events, for example /input/<name>/kbd.
 type Input struct {
 	Block
-	TextFgColor  Attribute
-	TextBgColor  Attribute
-	IsCapturing  bool
-	IsCommandBox bool
-	IsMultiLine  bool
-	TextBuilder  TextBuilder
-	SpecialChars map[string]string
-	ShowLineNo   bool
-	Prefix       string
-	OutputPrefix string
-	Name         string
-	CursorX      int
-	CursorY      int
+	TextFgColor      Attribute
+	TextBgColor      Attribute
+	IsCapturing      bool
+	CaptureArrowKeys bool
+	IsCommandBox     bool
+	IsMultiLine      bool
+	TextBuilder      TextBuilder
+	SpecialChars     map[string]string
+	ShowLineNo       bool
+	Prefix           string
+	OutputPrefix     string
+	Name             string
+	CursorX          int
+	CursorY          int
 
 	//DebugMode				bool
 	//debugMessage		string
@@ -115,17 +116,31 @@ func (i *Input) StartCapture() {
 
 			switch key {
 			case "<up>":
+				if !i.CaptureArrowKeys {
+					break
+				}
 				i.moveUp()
 			case "<down>":
+				if !i.CaptureArrowKeys {
+					break
+				}
 				i.moveDown()
 			case "<left>":
+				if !i.CaptureArrowKeys {
+					break
+				}
 				i.moveLeft()
 			case "<right>":
+				if !i.CaptureArrowKeys {
+					break
+				}
 				i.moveRight()
 			case "C-8", "<backspace>":
 				i.backspace()
 			case "<enter>":
 				i.enter()
+			case "<tab>":
+				break
 			default:
 				// If it's a CTRL something we don't handle then just ignore it
 				if strings.HasPrefix(key, "C-") {
@@ -171,7 +186,7 @@ func (i *Input) Text() string {
 
 // AppendLine appends and shows the text and a newline
 func (i *Input) AppendLine(text string) {
-	for _,line := range strings.Split(text,"\n") {
+	for _, line := range strings.Split(text, "\n") {
 		i.addString(line)
 		i.addString(NEW_LINE)
 	}
