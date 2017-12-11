@@ -3,6 +3,7 @@
 // be found in the LICENSE file.
 //
 // Portions copyright 2017 Patrick Devine <patrick@immense.ly>
+// Portions copyright 2017 Philipp Resch <phil@2kd.de>
 
 package termui
 
@@ -11,11 +12,13 @@ package termui
 // the item exceeding List's width is truncated, but when set to "wrap",
 // the overflowed text breaks into next line.
 
+// Item is the main struct for the listbox entries
 type Item struct {
 	ItemVal string
 	Text    string
 }
 
+// ListBox is the main struct
 type ListBox struct {
 	Block
 	Items       []Item
@@ -25,7 +28,7 @@ type ListBox struct {
 	lowerBound  int
 }
 
-// NewList returns a new *List with current theme.
+// NewListBox returns a new *ListBox with current theme.
 func NewListBox() *ListBox {
 	l := &ListBox{Block: *NewBlock()}
 	l.ItemFgColor = ThemeAttr("list.item.fg")
@@ -76,24 +79,34 @@ func (l *ListBox) GetItemsStrs() []string {
 	return strs
 }
 
+// Up moves the selection one up
 func (l *ListBox) Up() {
 	if l.Selected > 0 {
-		l.Selected -= 1
+		l.Selected--
 		if l.Selected < l.lowerBound {
-			l.lowerBound -= 1
+			l.lowerBound--
 		}
 	}
 }
 
+// Down moves the selection one down
 func (l *ListBox) Down() {
 	if l.Selected < len(l.Items)-1 {
-		l.Selected += 1
+		l.Selected++
 		if l.Selected >= l.innerArea.Dy()+l.lowerBound {
-			l.lowerBound += 1
+			l.lowerBound++
 		}
 	}
 }
 
+// Current gives the currently selected item
 func (l *ListBox) Current() Item {
+	// Failsafe
+	if l.Selected > len(l.Items)-1 {
+		l.Selected = len(l.Items) - 1
+	}
+	if l.Selected < 0 {
+		l.Selected = 0
+	}
 	return l.Items[l.Selected]
 }

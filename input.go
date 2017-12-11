@@ -4,7 +4,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/nsf/termbox-go"
+	termbox "github.com/nsf/termbox-go"
 )
 
 // default mappings between /sys/kbd events and multi-line inputs
@@ -190,10 +190,14 @@ func (i *Input) AppendLine(text string) {
 		i.addString(line)
 		i.addString(NEW_LINE)
 	}
+	i.AppendPrompt()
+	Render(i)
+}
+
+func (i *Input) AppendPrompt() {
 	if i.Prefix != "" {
 		i.addString(i.Prefix + " ")
 	}
-
 	Render(i)
 }
 
@@ -204,6 +208,9 @@ func (i *Input) Lines() []string {
 
 // LastCommand returns the last entered command
 func (i *Input) LastCommand() string {
+	if len(i.commands) == 0 {
+		return ""
+	}
 	return i.commands[len(i.commands)-1]
 }
 
@@ -435,9 +442,14 @@ func (i *Input) moveRight() {
 }
 
 func (i *Input) enter() {
+	curLine := i.getCurrentLine()
+	if curLine == "" {
+		return
+	}
+
 	if i.IsCommandBox {
 		// Get everything in this line and add it to the command buffer
-		i.commands = append(i.commands, i.getCurrentLine())
+		i.commands = append(i.commands, curLine)
 		i.commandIndex = 0
 	}
 
