@@ -51,6 +51,7 @@ type Input struct {
 	TextBgColor      Attribute
 	IsCapturing      bool
 	CaptureArrowKeys bool
+	CaptureEnterKey  bool
 	IsCommandBox     bool
 	IsMultiLine      bool
 	TextBuilder      TextBuilder
@@ -138,7 +139,9 @@ func (i *Input) StartCapture() {
 			case "C-8", "<backspace>":
 				i.backspace()
 			case "<enter>":
-				i.enter()
+				if !i.CaptureEnterKey {
+					i.enter()
+				}
 			case "<tab>":
 				break
 			default:
@@ -192,6 +195,10 @@ func (i *Input) AppendLine(text string) {
 	}
 	i.AppendPrompt()
 	Render(i)
+}
+
+func (i *Input) Append(char string) {
+	i.addString(char)
 }
 
 func (i *Input) AppendPrompt() {
@@ -316,7 +323,7 @@ func (i *Input) addString(key string) {
 	}
 }
 
-func (i *Input) overwriteCurrentLine(text string) {
+func (i *Input) OverwriteCurrentLine(text string) {
 	var l string
 	if i.Prefix != "" {
 		l = i.Prefix + " " + text
@@ -328,12 +335,26 @@ func (i *Input) overwriteCurrentLine(text string) {
 	Render(i)
 }
 
-func (i *Input) getCurrentLine() string {
+// CurrentLine of the input field
+func (i *Input) CurrentLine() (string, int) {
 	l := i.lines[i.cursorLineIndex]
-	if i.Prefix != "" {
-		l = l[len(i.Prefix)+1:]
+
+	/*	if i.Prefix != "" {
+			l = l[len(i.Prefix)+1:]
+		}
+	*/
+	return l, i.cursorLineIndex
+}
+
+func (i *Input) CurrentLineIndex() int {
+	return i.cursorLineIndex
+}
+
+func (i *Input) SpecificLine(line int) string {
+	if len(i.lines) < line {
+		return ""
 	}
-	return l
+	return i.lines[line]
 }
 
 func (i *Input) moveUp() {
@@ -345,7 +366,7 @@ func (i *Input) moveUp() {
 		}
 
 		if i.commandIndex == 0 {
-			i.savedCommand = i.getCurrentLine()
+			i.savedCommand, _ = i.CurrentLine()
 		}
 		i.commandIndex++
 		// Roll-over when upper commandlimit is reached
@@ -354,8 +375,8 @@ func (i *Input) moveUp() {
 		}
 
 		cmd := i.commands[len(i.commands)-i.commandIndex]
-		//i.addString(cmd)
-		i.overwriteCurrentLine(cmd)
+
+		i.OverwriteCurrentLine(cmd)
 		return
 	}
 
@@ -391,9 +412,8 @@ func (i *Input) moveDown() {
 		} else {
 			cmd = i.commands[len(i.commands)-i.commandIndex]
 		}
-
 		//i.addString(cmd)
-		i.overwriteCurrentLine(cmd)
+		i.OverwriteCurrentLine(cmd)
 		return
 	}
 
@@ -442,21 +462,26 @@ func (i *Input) moveRight() {
 }
 
 func (i *Input) enter() {
-	curLine := i.getCurrentLine()
+	curLine, _ := i.CurrentLine()
 	if curLine == "" {
 		return
 	}
 
-	if i.IsCommandBox {
-		// Get everything in this line and add it to the command buffer
-		i.commands = append(i.commands, curLine)
-		i.commandIndex = 0
-	}
+	i.AppendToCommandBuffer(curLine)
 
 	i.addString(NEW_LINE)
 	i.addString(i.OutputPrefix)
 
 	i.CursorY++
+}
+
+func (i *Input) AppendToCommandBuffer(line string) {
+	if i.IsCommandBox && len(line) > 0 && line != i.Prefix+" " {
+
+		// Get everything in this line and add it to the command buffer
+		i.commands = append(i.commands, line)
+		i.commandIndex = 0
+	}
 }
 
 // Buffer implements Bufferer interface.
