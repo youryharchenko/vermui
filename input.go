@@ -114,7 +114,7 @@ func (i *Input) StartCapture() {
 	Handle("/sys/kbd", func(e Event) {
 		if i.IsCapturing {
 			key := e.Data.(EvtKbd).KeyStr
-
+			o := i.getInputEvt(key)
 			switch key {
 			case "<up>":
 				if !i.CaptureArrowKeys {
@@ -139,8 +139,10 @@ func (i *Input) StartCapture() {
 			case "C-8", "<backspace>":
 				i.backspace()
 			case "<enter>":
-				if !i.CaptureEnterKey {
-					i.enter()
+
+				i.enter()
+				if i.IsCommandBox {
+					o.LineText = i.commands[len(i.commands)-1]
 				}
 			case "<tab>":
 				break
@@ -153,10 +155,12 @@ func (i *Input) StartCapture() {
 				i.addString(newString)
 
 			}
+
 			if i.Name == "" {
-				SendCustomEvt("/input/kbd", i.getInputEvt(key))
+				SendCustomEvt("/input/kbd", o)
 			} else {
-				SendCustomEvt("/input/"+i.Name+"/kbd", i.getInputEvt(key))
+
+				SendCustomEvt("/input/"+i.Name+"/kbd", o)
 			}
 
 			Render(i)
@@ -338,11 +342,6 @@ func (i *Input) OverwriteCurrentLine(text string) {
 // CurrentLine of the input field
 func (i *Input) CurrentLine() (string, int) {
 	l := i.lines[i.cursorLineIndex]
-
-	/*	if i.Prefix != "" {
-			l = l[len(i.Prefix)+1:]
-		}
-	*/
 	return l, i.cursorLineIndex
 }
 
@@ -462,15 +461,15 @@ func (i *Input) moveRight() {
 }
 
 func (i *Input) enter() {
-	curLine, _ := i.CurrentLine()
-	if curLine == "" {
-		return
-	}
 
+	curLine, _ := i.CurrentLine()
 	i.AppendToCommandBuffer(curLine)
 
 	i.addString(NEW_LINE)
-	i.addString(i.OutputPrefix)
+	if len(i.Prefix) != 0 {
+		i.addString(i.Prefix)
+		i.addString(" ")
+	}
 
 	i.CursorY++
 }
@@ -479,7 +478,11 @@ func (i *Input) AppendToCommandBuffer(line string) {
 	if i.IsCommandBox && len(line) > 0 && line != i.Prefix+" " {
 
 		// Get everything in this line and add it to the command buffer
-		i.commands = append(i.commands, line)
+		l := line
+		if len(i.Prefix) != 0 {
+			l = line[len(i.Prefix)+1:]
+		}
+		i.commands = append(i.commands, l)
 		i.commandIndex = 0
 	}
 }

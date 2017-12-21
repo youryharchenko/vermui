@@ -7,6 +7,8 @@
 
 package termui
 
+import "strings"
+
 // List displays []Item as its items (items are pairs of text and values),
 // it has a Overflow option (default is "hidden"), when set to "hidden",
 // the item exceeding List's width is truncated, but when set to "wrap",
@@ -24,7 +26,9 @@ type ListBox struct {
 	Items       []Item
 	ItemFgColor Attribute
 	ItemBgColor Attribute
+	Name        string
 	Selected    int
+	IsCapturing bool
 	lowerBound  int
 }
 
@@ -71,6 +75,43 @@ func (l *ListBox) Buffer() Buffer {
 	return buf
 }
 
+// StartCapture begins catching events from the /sys/kbd stream and updates the Listbox field. While
+// capturing events, the ListBox also publishes its own event stream under the /input/kbd path.
+func (l *ListBox) StartCapture() {
+	l.IsCapturing = true
+	Handle("/sys/kbd", func(e Event) {
+		if l.IsCapturing {
+			key := e.Data.(EvtKbd).KeyStr
+
+			switch key {
+			case "<up>":
+				l.Up()
+			case "<down>":
+				l.Down()
+			case "<tab>":
+				break
+			default:
+				// If it's a CTRL something we don't handle then just ignore it
+				if strings.HasPrefix(key, "C-") {
+					break
+				}
+			}
+			if l.Name == "" {
+				SendCustomEvt("/input/kbd", l.getInputEvt(key))
+			} else {
+				SendCustomEvt("/input/"+l.Name+"/kbd", l.getInputEvt(key))
+			}
+
+			Render(l)
+		}
+	})
+}
+
+// StopCapture tells the Input field to stop accepting events from the /sys/kbd stream
+func (l *ListBox) StopCapture() {
+	l.IsCapturing = false
+}
+
 func (l *ListBox) GetItemsStrs() []string {
 	var strs []string
 	for _, item := range l.Items {
@@ -109,4 +150,10 @@ func (l *ListBox) Current() Item {
 		l.Selected = 0
 	}
 	return l.Items[l.Selected]
+}
+
+func (l *ListBox) getInputEvt(key string) EvtInput {
+	return EvtInput{
+		KeyStr: key,
+	}
 }
