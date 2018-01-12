@@ -602,10 +602,15 @@ func (i *Input) getCharString(s string) string {
 }
 
 func (i *Input) getInputEvt(key string) EvtInput {
-	return EvtInput{
+	evt := EvtInput{
 		KeyStr:         key,
-		LineText:       i.lines[i.cursorLineIndex],
 		CursorPosition: i.cursorLinePos,
 		LineIndex:      i.cursorLineIndex,
 	}
+
+	if len(i.lines) > 0 {
+		evt.LineText = i.lines[i.cursorLineIndex]
+	}
+
+	return evt
 }
