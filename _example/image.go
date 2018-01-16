@@ -17,7 +17,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/gizak/termui"
+	"github.com/verdverm/termui"
 )
 
 func main() {

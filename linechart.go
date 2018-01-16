@@ -277,14 +277,16 @@ func (lc *LineChart) calcLabelY() {
 
 // calcLayout computes the ranges of the data and sets the visible range to cover it
 func (lc *LineChart) calcLayout() {
-	// set datalabels if it is not provided
-	if (lc.DataLabels == nil || len(lc.DataLabels) == 0) || lc.autoLabels {
-		lc.autoLabels = true
-		lc.DataLabels = make([]string, len(lc.Data))
-		for i := range lc.Data {
-			lc.DataLabels[i] = fmt.Sprint(i)
+	/*
+		// set datalabels if it is not provided
+		if (lc.DataLabels == nil || len(lc.DataLabels) == 0) || lc.autoLabels {
+			lc.autoLabels = true
+			lc.DataLabels = make([]string, len(lc.Data))
+			for i, _ := range lc.Data {
+				lc.DataLabels[i] = fmt.Sprint(i)
+			}
 		}
-	}
+	*/
 
 	// TODO - figure out how to smooth out large increase/decrease of Y scale over time
 	//        this makes the Y range strictly track the visible Y values, which could be erratic.

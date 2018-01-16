@@ -232,7 +232,7 @@ func (es *EvtStream) Handle(path string, handler func(Event)) {
 	es.Handlers[cleanPath(path)] = handler
 }
 
-func (es *EvtStream) RemoveHandle(path string, handler func(Event)) {
+func (es *EvtStream) RemoveHandle(path string) {
 	delete(es.Handlers, cleanPath(path))
 }
 

@@ -8,15 +8,6 @@
   version = "v1.1.0"
 
 [[projects]]
-  name = "github.com/gizak/termui"
-  packages = [
-    ".",
-    "debug"
-  ]
-  revision = "24acd523c756fd9728824cdfac66aad9d8982fb7"
-  version = "v2.2.0"
-
-[[projects]]
   name = "github.com/maruel/panicparse"
   packages = ["stack"]
   revision = "ad661195ed0e88491e0f14be6613304e3b1141d6"
@@ -55,6 +46,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "fba2f05a8cd60bb1f1244a2dde3842a6d54f5f8cbe168e619fb55ea54ed7407e"
+  inputs-digest = "709dd98c8e5e3631f20b945e086dd12a779b6c5ae241cacec1d100129fe3ec6e"
   solver-name = "gps-cdcl"
   solver-version = 1
