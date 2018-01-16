@@ -231,6 +231,10 @@ func (es *EvtStream) Handle(path string, handler func(Event)) {
 	es.Handlers[cleanPath(path)] = handler
 }
 
+func (es *EvtStream) RemoveHandle(path string, handler func(Event)) {
+	delete(es.Handlers, cleanPath(path))
+}
+
 func findMatch(mux map[string]func(Event), path string) string {
 	n := -1
 	pattern := ""
@@ -297,6 +301,10 @@ func Merge(name string, ec chan Event) {
 
 func Handle(path string, handler func(Event)) {
 	DefaultEvtStream.Handle(path, handler)
+}
+
+func RemoveHandle(path string) {
+	DefaultEvtStream.RemoveHandle(path)
 }
 
 func ResetHandlers() {

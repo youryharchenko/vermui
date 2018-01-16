@@ -92,3 +92,12 @@ func (b *Block) Handle(path string, handler func(Event)) {
 
 	DefaultWgtMgr.AddWgtHandler(b.Id(), path, handler)
 }
+
+func (b *Block) RemoveHandle(path string) {
+	_, ok := DefaultWgtMgr[b.Id()]
+	if !ok {
+		return
+	}
+
+	DefaultWgtMgr.RmWgtHandler(b.Id(), path)
+}
