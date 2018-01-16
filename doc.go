@@ -1,14 +1,15 @@
 // Copyright 2017 Zack Guo <zack.y.guo@gmail.com>. All rights reserved.
+// Copyright 2018 Tony Worm <verdverm@gmail.com>. All rights reserved.
 // Use of this source code is governed by a MIT license that can
 // be found in the LICENSE file.
 
 /*
-Package termui is a library designed for creating command line UI. For more info, goto http://github.com/gizak/termui
+Package termui is a library designed for creating command line UI. For more info, goto http://github.com/verdverm/termui
 
 A simplest example:
     package main
 
-    import ui "github.com/gizak/termui"
+    import ui "github.com/verdverm/termui"
 
     func main() {
         if err:=ui.Init(); err != nil {

@@ -1,4 +1,5 @@
 // Copyright 2017 Zack Guo <zack.y.guo@gmail.com>. All rights reserved.
+// Copyright 2018 Tony Worm <verdverm@gmail.com>. All rights reserved.
 // Use of this source code is governed by a MIT license that can
 // be found in the LICENSE file.
 
