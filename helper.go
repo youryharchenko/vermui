@@ -3,7 +3,7 @@
 // Use of this source code is governed by a MIT license that can
 // be found in the LICENSE file.
 
-package termui
+package vermui
 
 import (
 	"regexp"
@@ -113,7 +113,7 @@ func charWidth(ch rune) int {
 
 var whiteSpaceRegex = regexp.MustCompile(`\s`)
 
-// StringToAttribute converts text to a termui attribute. You may specify more
+// StringToAttribute converts text to a vermui attribute. You may specify more
 // then one attribute like that: "BLACK, BOLD, ...". All whitespaces
 // are ignored.
 func StringToAttribute(text string) Attribute {

@@ -4,12 +4,12 @@
 // be found in the LICENSE file.
 
 /*
-Package termui is a library designed for creating command line UI. For more info, goto http://github.com/verdverm/termui
+Package vermui is a library designed for creating command line UI. For more info, goto http://github.com/verdverm/vermui
 
 A simplest example:
     package main
 
-    import ui "github.com/verdverm/termui"
+    import ui "github.com/verdverm/vermui"
 
     func main() {
         if err:=ui.Init(); err != nil {
@@ -27,4 +27,4 @@ A simplest example:
         ui.Loop()
     }
 */
-package termui
+package vermui

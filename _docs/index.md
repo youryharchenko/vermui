@@ -1,4 +1,4 @@
-[termui]() is a cross-platform, easy-to-compile, and fully-customizable terminal dashboard. It aims to provide a terminal front end for your applications with less struggle:
+[vermui]() is a cross-platform, easy-to-compile, and fully-customizable terminal dashboard. It aims to provide a terminal front end for your applications with less struggle:
 
 > ![dashboard](img/dashboard.gif)
 >

@@ -7,36 +7,35 @@
 package main
 
 import (
-	"github.com/verdverm/termui"
-	"github.com/verdverm/termui/extra"
+	"github.com/verdverm/vermui"
 )
 
 func main() {
-	err := termui.Init()
+	err := vermui.Init()
 	if err != nil {
 		panic(err)
 	}
-	defer termui.Close()
+	defer vermui.Close()
 
-	//termui.UseTheme("helloworld")
+	//vermui.UseTheme("helloworld")
 
-	header := termui.NewPar("Press q to quit, Press j or k to switch tabs")
+	header := vermui.NewPar("Press q to quit, Press j or k to switch tabs")
 	header.Height = 1
 	header.Width = 50
 	header.Border = false
-	header.TextBgColor = termui.ColorBlue
+	header.TextBgColor = vermui.ColorBlue
 
-	tab1 := extra.NewTab("pierwszy")
-	par2 := termui.NewPar("Press q to quit\nPress j or k to switch tabs\n")
+	tab1 := vermui.NewTab("pierwszy")
+	par2 := vermui.NewPar("Press q to quit\nPress j or k to switch tabs\n")
 	par2.Height = 5
 	par2.Width = 37
 	par2.Y = 0
 	par2.BorderLabel = "Keys"
-	par2.BorderFg = termui.ColorYellow
+	par2.BorderFg = vermui.ColorYellow
 	tab1.AddBlocks(par2)
 
-	tab2 := extra.NewTab("drugi")
-	bc := termui.NewBarChart()
+	tab2 := vermui.NewTab("drugi")
+	bc := vermui.NewBarChart()
 	data := []int{3, 2, 5, 3, 9, 5, 3, 2, 5, 8, 3, 2, 4, 5, 3, 2, 5, 7, 5, 3, 2, 6, 7, 4, 6, 3, 6, 7, 8, 3, 6, 4, 5, 3, 2, 4, 6, 4, 8, 5, 9, 4, 3, 6, 5, 3, 6}
 	bclabels := []string{"S0", "S1", "S2", "S3", "S4", "S5"}
 	bc.BorderLabel = "Bar Chart"
@@ -44,40 +43,40 @@ func main() {
 	bc.Width = 26
 	bc.Height = 10
 	bc.DataLabels = bclabels
-	bc.TextColor = termui.ColorGreen
-	bc.BarColor = termui.ColorRed
-	bc.NumColor = termui.ColorYellow
+	bc.TextColor = vermui.ColorGreen
+	bc.BarColor = vermui.ColorRed
+	bc.NumColor = vermui.ColorYellow
 	tab2.AddBlocks(bc)
 
-	tab3 := extra.NewTab("trzeci")
-	tab4 := extra.NewTab("żółw")
-	tab5 := extra.NewTab("four")
-	tab6 := extra.NewTab("five")
+	tab3 := vermui.NewTab("trzeci")
+	tab4 := vermui.NewTab("żółw")
+	tab5 := vermui.NewTab("four")
+	tab6 := vermui.NewTab("five")
 
-	tabpane := extra.NewTabpane()
+	tabpane := vermui.NewTabpane()
 	tabpane.Y = 1
 	tabpane.Width = 30
 	tabpane.Border = true
 
 	tabpane.SetTabs(*tab1, *tab2, *tab3, *tab4, *tab5, *tab6)
 
-	termui.Render(header, tabpane)
+	vermui.Render(header, tabpane)
 
-	termui.Handle("/sys/kbd/q", func(termui.Event) {
-		termui.StopLoop()
+	vermui.Handle("/sys/kbd/q", func(vermui.Event) {
+		vermui.StopLoop()
 	})
 
-	termui.Handle("/sys/kbd/j", func(termui.Event) {
+	vermui.Handle("/sys/kbd/j", func(vermui.Event) {
 		tabpane.SetActiveLeft()
-		termui.Clear()
-		termui.Render(header, tabpane)
+		vermui.Clear()
+		vermui.Render(header, tabpane)
 	})
 
-	termui.Handle("/sys/kbd/k", func(termui.Event) {
+	vermui.Handle("/sys/kbd/k", func(vermui.Event) {
 		tabpane.SetActiveRight()
-		termui.Clear()
-		termui.Render(header, tabpane)
+		vermui.Clear()
+		vermui.Render(header, tabpane)
 	})
 
-	termui.Loop()
+	vermui.Loop()
 }

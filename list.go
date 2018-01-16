@@ -2,7 +2,7 @@
 // Use of this source code is governed by a MIT license that can
 // be found in the LICENSE file.
 
-package termui
+package vermui
 
 import "strings"
 
@@ -12,7 +12,7 @@ import "strings"
 // the overflowed text breaks into next line.
 /*
   strs := []string{
-		"[0] github.com/verdverm/termui",
+		"[0] github.com/verdverm/vermui",
 		"[1] editbox.go",
 		"[2] interrupt.go",
 		"[3] keyboard.go",
@@ -21,9 +21,9 @@ import "strings"
 		"[6] dashboard.go",
 		"[7] nsf/termbox-go"}
 
-  ls := termui.NewList()
+  ls := vermui.NewList()
   ls.Items = strs
-  ls.ItemFgColor = termui.ColorYellow
+  ls.ItemFgColor = vermui.ColorYellow
   ls.BorderLabel = "List"
   ls.Height = 7
   ls.Width = 25

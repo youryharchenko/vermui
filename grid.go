@@ -3,7 +3,7 @@
 // Use of this source code is governed by a MIT license that can
 // be found in the LICENSE file.
 
-package termui
+package vermui
 
 // GridBufferer introduces a Bufferer that can be manipulated by Grid.
 type GridBufferer interface {
@@ -186,7 +186,7 @@ func (r *Row) Buffer() Buffer {
 // Grid implements 12 columns system.
 // A simple example:
 /*
-   import ui "github.com/verdverm/termui"
+   import ui "github.com/verdverm/vermui"
    // init and create widgets...
 
    // build

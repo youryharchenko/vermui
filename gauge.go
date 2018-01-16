@@ -3,7 +3,7 @@
 // Use of this source code is governed by a MIT license that can
 // be found in the LICENSE file.
 
-package termui
+package vermui
 
 import (
 	"strconv"
@@ -13,13 +13,13 @@ import (
 // Gauge is a progress bar like widget.
 // A simple example:
 /*
-  g := termui.NewGauge()
+  g := vermui.NewGauge()
   g.Percent = 40
   g.Width = 50
   g.Height = 3
   g.BorderLabel = "Slim Gauge"
-  g.BarColor = termui.ColorRed
-  g.PercentColor = termui.ColorBlue
+  g.BarColor = vermui.ColorRed
+  g.PercentColor = vermui.ColorBlue
 */
 
 const ColorUndef Attribute = Attribute(^uint16(0))

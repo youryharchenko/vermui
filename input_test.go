@@ -1,4 +1,4 @@
-package termui
+package vermui
 
 import (
 	"strings"

@@ -18,8 +18,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/verdverm/termui"
-	"github.com/verdverm/termui/extra"
+	"github.com/verdverm/vermui"
 )
 
 const statFilePath = "/proc/stat"
@@ -201,23 +200,23 @@ func getMemStats() (ms MemStat, err error) {
 }
 
 type CpuTabElems struct {
-	GMap   map[string]*termui.Gauge
-	LChart *termui.LineChart
+	GMap   map[string]*vermui.Gauge
+	LChart *vermui.LineChart
 }
 
 func NewCpuTabElems(width int) *CpuTabElems {
-	lc := termui.NewLineChart()
+	lc := vermui.NewLineChart()
 	lc.Width = width
 	lc.Height = 12
 	lc.X = 0
 	lc.Mode = "dot"
 	lc.BorderLabel = "CPU"
-	return &CpuTabElems{GMap: make(map[string]*termui.Gauge),
+	return &CpuTabElems{GMap: make(map[string]*vermui.Gauge),
 		LChart: lc}
 }
 
-func (cte *CpuTabElems) AddGauge(key string, Y int, width int) *termui.Gauge {
-	cte.GMap[key] = termui.NewGauge()
+func (cte *CpuTabElems) AddGauge(key string, Y int, width int) *vermui.Gauge {
+	cte.GMap[key] = vermui.NewGauge()
 	cte.GMap[key].Width = width
 	cte.GMap[key].Height = 3
 	cte.GMap[key].Y = Y
@@ -239,21 +238,21 @@ func (cte *CpuTabElems) Update(cs CpusStats) {
 }
 
 type MemTabElems struct {
-	Gauge  *termui.Gauge
-	SLines *termui.Sparklines
+	Gauge  *vermui.Gauge
+	SLines *vermui.Sparklines
 }
 
 func NewMemTabElems(width int) *MemTabElems {
-	g := termui.NewGauge()
+	g := vermui.NewGauge()
 	g.Width = width
 	g.Height = 3
 	g.Y = 0
 
-	sline := termui.NewSparkline()
+	sline := vermui.NewSparkline()
 	sline.Title = "MEM"
 	sline.Height = 8
 
-	sls := termui.NewSparklines(sline)
+	sls := vermui.NewSparklines(sline)
 	sls.Width = width
 	sls.Height = 12
 	sls.Y = 3
@@ -275,26 +274,26 @@ func main() {
 	if runtime.GOOS != "linux" {
 		panic("Currently works only on Linux")
 	}
-	err := termui.Init()
+	err := vermui.Init()
 	if err != nil {
 		panic(err)
 	}
-	defer termui.Close()
+	defer vermui.Close()
 
 	termWidth := 70
 
-	//termui.UseTheme("helloworld")
+	//vermui.UseTheme("helloworld")
 
-	header := termui.NewPar("Press q to quit, Press j or k to switch tabs")
+	header := vermui.NewPar("Press q to quit, Press j or k to switch tabs")
 	header.Height = 1
 	header.Width = 50
 	header.Border = false
-	header.TextBgColor = termui.ColorBlue
+	header.TextBgColor = vermui.ColorBlue
 
-	tabCpu := extra.NewTab("CPU")
-	tabMem := extra.NewTab("MEM")
+	tabCpu := vermui.NewTab("CPU")
+	tabMem := vermui.NewTab("MEM")
 
-	tabpane := extra.NewTabpane()
+	tabpane := vermui.NewTabpane()
 	tabpane.Y = 1
 	tabpane.Width = 30
 	tabpane.Border = false
@@ -333,23 +332,23 @@ func main() {
 
 	tabpane.SetTabs(*tabCpu, *tabMem)
 
-	termui.Render(header, tabpane)
+	vermui.Render(header, tabpane)
 
-	termui.Handle("/sys/kbd/q", func(termui.Event) {
-		termui.StopLoop()
+	vermui.Handle("/sys/kbd/q", func(vermui.Event) {
+		vermui.StopLoop()
 	})
 
-	termui.Handle("/sys/kbd/j", func(termui.Event) {
+	vermui.Handle("/sys/kbd/j", func(vermui.Event) {
 		tabpane.SetActiveLeft()
-		termui.Render(header, tabpane)
+		vermui.Render(header, tabpane)
 	})
 
-	termui.Handle("/sys/kbd/k", func(termui.Event) {
+	vermui.Handle("/sys/kbd/k", func(vermui.Event) {
 		tabpane.SetActiveRight()
-		termui.Render(header, tabpane)
+		vermui.Render(header, tabpane)
 	})
 
-	termui.Handle("/timer/1s", func(e termui.Event) {
+	vermui.Handle("/timer/1s", func(e vermui.Event) {
 		cs, errcs := getCpusStatsMap()
 		if errcs != nil {
 			panic(errcs)
@@ -362,8 +361,8 @@ func main() {
 			panic(errm)
 		}
 		memTabElems.Update(ms)
-		termui.Render(header, tabpane)
+		vermui.Render(header, tabpane)
 	})
 
-	termui.Loop()
+	vermui.Loop()
 }

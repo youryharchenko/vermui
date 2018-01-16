@@ -8,8 +8,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/verdverm/termui"
-	"github.com/verdverm/termui/debug"
+	"github.com/verdverm/vermui"
+	"github.com/verdverm/vermui/debug"
 )
 
 func main() {
@@ -22,35 +22,35 @@ func main() {
 	// run as server
 	go func() { panic(debug.ListenAndServe()) }()
 
-	if err := termui.Init(); err != nil {
+	if err := vermui.Init(); err != nil {
 		panic(err)
 	}
-	defer termui.Close()
+	defer vermui.Close()
 
-	//termui.UseTheme("helloworld")
-	b := termui.NewBlock()
+	//vermui.UseTheme("helloworld")
+	b := vermui.NewBlock()
 	b.Width = 20
 	b.Height = 20
-	b.Float = termui.AlignCenter
+	b.Float = vermui.AlignCenter
 	b.BorderLabel = "[HELLO](fg-red,bg-white) [WORLD](fg-blue,bg-green)"
 
-	termui.Render(b)
+	vermui.Render(b)
 
-	termui.Handle("/sys", func(e termui.Event) {
-		k, ok := e.Data.(termui.EvtKbd)
+	vermui.Handle("/sys", func(e vermui.Event) {
+		k, ok := e.Data.(vermui.EvtKbd)
 		debug.Logf("->%v\n", e)
 		if ok && k.KeyStr == "q" {
-			termui.StopLoop()
+			vermui.StopLoop()
 		}
 	})
 
-	termui.Handle(("/usr"), func(e termui.Event) {
+	vermui.Handle(("/usr"), func(e vermui.Event) {
 		debug.Logf("->%v\n", e)
 	})
 
-	termui.Handle("/timer/1s", func(e termui.Event) {
-		t := e.Data.(termui.EvtTimer)
-		termui.SendCustomEvt("/usr/t", t.Count)
+	vermui.Handle("/timer/1s", func(e vermui.Event) {
+		t := e.Data.(vermui.EvtTimer)
+		vermui.SendCustomEvt("/usr/t", t.Count)
 
 		if t.Count%2 == 0 {
 			b.BorderLabel = "[HELLO](fg-red,bg-green) [WORLD](fg-blue,bg-white)"
@@ -58,9 +58,9 @@ func main() {
 			b.BorderLabel = "[HELLO](fg-blue,bg-white) [WORLD](fg-red,bg-green)"
 		}
 
-		termui.Render(b)
+		vermui.Render(b)
 
 	})
 
-	termui.Loop()
+	vermui.Loop()
 }

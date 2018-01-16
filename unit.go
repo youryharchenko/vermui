@@ -1,6 +1,6 @@
 // writen in 2017 by cnaize
 
-package termui
+package vermui
 
 import (
 	"fmt"
@@ -77,7 +77,7 @@ func RemoveUnitFrom(unit UnitInterface, from UnitInterface) error {
 }
 
 // Warning!
-// - don't use termui.Align for rendring
+// - don't use vermui.Align for rendring
 // - use SetLocalX(Y) instead of direct X(Y)
 type Unit struct {
 	*Block

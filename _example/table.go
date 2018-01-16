@@ -4,30 +4,30 @@
 
 package main
 
-import "github.com/verdverm/termui"
+import "github.com/verdverm/vermui"
 
 func main() {
-	err := termui.Init()
+	err := vermui.Init()
 	if err != nil {
 		panic(err)
 	}
-	defer termui.Close()
+	defer vermui.Close()
 	rows1 := [][]string{
 		[]string{"header1", "header2", "header3"},
 		[]string{"你好吗", "Go-lang is so cool", "Im working on Ruby"},
 		[]string{"2016", "10", "11"},
 	}
 
-	table1 := termui.NewTable()
+	table1 := vermui.NewTable()
 	table1.Rows = rows1
-	table1.FgColor = termui.ColorWhite
-	table1.BgColor = termui.ColorDefault
+	table1.FgColor = vermui.ColorWhite
+	table1.BgColor = vermui.ColorDefault
 	table1.Y = 0
 	table1.X = 0
 	table1.Width = 62
 	table1.Height = 7
 
-	termui.Render(table1)
+	vermui.Render(table1)
 
 	rows2 := [][]string{
 		[]string{"header1", "header2", "header3"},
@@ -35,22 +35,22 @@ func main() {
 		[]string{"2016", "11", "11"},
 	}
 
-	table2 := termui.NewTable()
+	table2 := vermui.NewTable()
 	table2.Rows = rows2
-	table2.FgColor = termui.ColorWhite
-	table2.BgColor = termui.ColorDefault
-	table2.TextAlign = termui.AlignCenter
+	table2.FgColor = vermui.ColorWhite
+	table2.BgColor = vermui.ColorDefault
+	table2.TextAlign = vermui.AlignCenter
 	table2.Separator = false
 	table2.Analysis()
 	table2.SetSize()
-	table2.BgColors[2] = termui.ColorRed
+	table2.BgColors[2] = vermui.ColorRed
 	table2.Y = 10
 	table2.X = 0
 	table2.Border = true
 
-	termui.Render(table2)
-	termui.Handle("/sys/kbd/q", func(termui.Event) {
-		termui.StopLoop()
+	vermui.Render(table2)
+	vermui.Handle("/sys/kbd/q", func(vermui.Event) {
+		vermui.StopLoop()
 	})
-	termui.Loop()
+	vermui.Loop()
 }

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a MIT license that can
 // be found in the LICENSE file.
 
-package termui
+package vermui
 
 // Par displays a paragraph.
 /*
-  par := termui.NewPar("Simple Text")
+  par := vermui.NewPar("Simple Text")
   par.Height = 3
   par.Width = 17
   par.BorderLabel = "Label"

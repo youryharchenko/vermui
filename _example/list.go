@@ -6,19 +6,19 @@
 
 package main
 
-import "github.com/verdverm/termui"
+import "github.com/verdverm/vermui"
 
 func main() {
-	err := termui.Init()
+	err := vermui.Init()
 	if err != nil {
 		panic(err)
 	}
-	defer termui.Close()
+	defer vermui.Close()
 
-	//termui.UseTheme("helloworld")
+	//vermui.UseTheme("helloworld")
 
 	strs := []string{
-		"[0] github.com/verdverm/termui",
+		"[0] github.com/verdverm/vermui",
 		"[1] [你好，世界](fg-blue)",
 		"[2] [こんにちは世界](fg-red)",
 		"[3] [color output](fg-white,bg-green)",
@@ -27,18 +27,18 @@ func main() {
 		"[6] dashboard.go",
 		"[7] nsf/termbox-go"}
 
-	ls := termui.NewList()
+	ls := vermui.NewList()
 	ls.Items = strs
-	ls.ItemFgColor = termui.ColorYellow
+	ls.ItemFgColor = vermui.ColorYellow
 	ls.BorderLabel = "List"
 	ls.Height = 7
 	ls.Width = 25
 	ls.Y = 0
 
-	termui.Render(ls)
-	termui.Handle("/sys/kbd/q", func(termui.Event) {
-		termui.StopLoop()
+	vermui.Render(ls)
+	vermui.Handle("/sys/kbd/q", func(vermui.Event) {
+		vermui.StopLoop()
 	})
-	termui.Loop()
+	vermui.Loop()
 
 }

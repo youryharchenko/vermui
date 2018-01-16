@@ -4,7 +4,7 @@
 
 // +build !windows
 
-package termui
+package vermui
 
 const TOP_RIGHT = '╕'
 const VERTICAL_LINE = '│'

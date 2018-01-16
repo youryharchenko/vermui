@@ -5,7 +5,7 @@
 // Portions copyright 2017 Patrick Devine <patrick@immense.ly>
 // Portions copyright 2017 Philipp Resch <phil@2kd.de>
 
-package termui
+package vermui
 
 import "strings"
 

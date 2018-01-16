@@ -3,10 +3,10 @@ package switcher
 import (
 	"fmt"
 
-	ui "github.com/verdverm/termui"
+	ui "github.com/verdverm/vermui"
 
-	"github.com/verdverm/termui/layout/abstract"
-	"github.com/verdverm/termui/layout/base"
+	"github.com/verdverm/vermui/layout/abstract"
+	"github.com/verdverm/vermui/layout/base"
 )
 
 type SubLayout interface {

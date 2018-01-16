@@ -4,7 +4,7 @@
 
 package main
 
-import ui "github.com/verdverm/termui"
+import ui "github.com/verdverm/vermui"
 
 func main() {
 

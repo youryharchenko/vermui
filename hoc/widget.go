@@ -1,7 +1,7 @@
 package widgets
 
 import (
-	ui "github.com/verdverm/termui"
+	ui "github.com/verdverm/vermui"
 )
 
 type Widget interface {

@@ -10,9 +10,9 @@ pages:
 - Versions: 'versions.md'
 - About: 'about.md'
 
-site_name: termui
-repo_url: https://github.com/verdverm/termui/
-site_description: 'termui user guide'
+site_name: vermui
+repo_url: https://github.com/verdverm/vermui/
+site_description: 'vermui user guide'
 site_author: verdverm
 
 docs_dir: '_docs'

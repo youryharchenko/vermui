@@ -2,7 +2,7 @@
 // Use of this source code is governed by a MIT license that can
 // be found in the LICENSE file.
 
-package termui
+package vermui
 
 import (
 	"fmt"
@@ -40,14 +40,14 @@ var rSingleBraille = [4]rune{'\u2880', '⠠', '⠐', '⠈'}
 // A single braille character is a 2x4 grid of dots, so Using braille
 // gives 2x X resolution and 4x Y resolution over dot mode.
 /*
-  lc := termui.NewLineChart()
+  lc := vermui.NewLineChart()
   lc.BorderLabel = "braille-mode Line Chart"
   lc.Data["name'] = [1.2, 1.3, 1.5, 1.7, 1.5, 1.6, 1.8, 2.0]
   lc.Width = 50
   lc.Height = 12
-  lc.AxesColor = termui.ColorWhite
-  lc.LineColor = termui.ColorGreen | termui.AttrBold
-  // termui.Render(lc)...
+  lc.AxesColor = vermui.ColorWhite
+  lc.LineColor = vermui.ColorGreen | vermui.AttrBold
+  // vermui.Render(lc)...
 */
 type LineChart struct {
 	Block

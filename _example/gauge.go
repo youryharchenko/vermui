@@ -6,79 +6,79 @@
 
 package main
 
-import "github.com/verdverm/termui"
+import "github.com/verdverm/vermui"
 
 func main() {
-	err := termui.Init()
+	err := vermui.Init()
 	if err != nil {
 		panic(err)
 	}
-	defer termui.Close()
+	defer vermui.Close()
 
-	//termui.UseTheme("helloworld")
+	//vermui.UseTheme("helloworld")
 
-	g0 := termui.NewGauge()
+	g0 := vermui.NewGauge()
 	g0.Percent = 40
 	g0.Width = 50
 	g0.Height = 3
 	g0.BorderLabel = "Slim Gauge"
-	g0.BarColor = termui.ColorRed
-	g0.BorderFg = termui.ColorWhite
-	g0.BorderLabelFg = termui.ColorCyan
+	g0.BarColor = vermui.ColorRed
+	g0.BorderFg = vermui.ColorWhite
+	g0.BorderLabelFg = vermui.ColorCyan
 
-	gg := termui.NewBlock()
+	gg := vermui.NewBlock()
 	gg.Width = 50
 	gg.Height = 5
 	gg.Y = 12
 	gg.BorderLabel = "TEST"
 	gg.Align()
 
-	g2 := termui.NewGauge()
+	g2 := vermui.NewGauge()
 	g2.Percent = 60
 	g2.Width = 50
 	g2.Height = 3
-	g2.PercentColor = termui.ColorBlue
+	g2.PercentColor = vermui.ColorBlue
 	g2.Y = 3
 	g2.BorderLabel = "Slim Gauge"
-	g2.BarColor = termui.ColorYellow
-	g2.BorderFg = termui.ColorWhite
+	g2.BarColor = vermui.ColorYellow
+	g2.BorderFg = vermui.ColorWhite
 
-	g1 := termui.NewGauge()
+	g1 := vermui.NewGauge()
 	g1.Percent = 30
 	g1.Width = 50
 	g1.Height = 5
 	g1.Y = 6
 	g1.BorderLabel = "Big Gauge"
-	g1.PercentColor = termui.ColorYellow
-	g1.BarColor = termui.ColorGreen
-	g1.BorderFg = termui.ColorWhite
-	g1.BorderLabelFg = termui.ColorMagenta
+	g1.PercentColor = vermui.ColorYellow
+	g1.BarColor = vermui.ColorGreen
+	g1.BorderFg = vermui.ColorWhite
+	g1.BorderLabelFg = vermui.ColorMagenta
 
-	g3 := termui.NewGauge()
+	g3 := vermui.NewGauge()
 	g3.Percent = 50
 	g3.Width = 50
 	g3.Height = 3
 	g3.Y = 11
 	g3.BorderLabel = "Gauge with custom label"
 	g3.Label = "{{percent}}% (100MBs free)"
-	g3.LabelAlign = termui.AlignRight
+	g3.LabelAlign = vermui.AlignRight
 
-	g4 := termui.NewGauge()
+	g4 := vermui.NewGauge()
 	g4.Percent = 50
 	g4.Width = 50
 	g4.Height = 3
 	g4.Y = 14
 	g4.BorderLabel = "Gauge"
 	g4.Label = "Gauge with custom highlighted label"
-	g4.PercentColor = termui.ColorYellow
-	g4.BarColor = termui.ColorGreen
-	g4.PercentColorHighlighted = termui.ColorBlack
+	g4.PercentColor = vermui.ColorYellow
+	g4.BarColor = vermui.ColorGreen
+	g4.PercentColorHighlighted = vermui.ColorBlack
 
-	termui.Render(g0, g1, g2, g3, g4)
+	vermui.Render(g0, g1, g2, g3, g4)
 
-	termui.Handle("/sys/kbd/q", func(termui.Event) {
-		termui.StopLoop()
+	vermui.Handle("/sys/kbd/q", func(vermui.Event) {
+		vermui.StopLoop()
 	})
 
-	termui.Loop()
+	vermui.Loop()
 }

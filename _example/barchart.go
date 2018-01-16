@@ -6,15 +6,15 @@
 
 package main
 
-import "github.com/verdverm/termui"
+import "github.com/verdverm/vermui"
 
 func main() {
-	if err := termui.Init(); err != nil {
+	if err := vermui.Init(); err != nil {
 		panic(err)
 	}
-	defer termui.Close()
+	defer vermui.Close()
 
-	bc := termui.NewBarChart()
+	bc := vermui.NewBarChart()
 	data := []int{3, 2, 5, 3, 9, 5, 3, 2, 5, 8, 3, 2, 4, 5, 3, 2, 5, 7, 5, 3, 2, 6, 7, 4, 6, 3, 6, 7, 8, 3, 6, 4, 5, 3, 2, 4, 6, 4, 8, 5, 9, 4, 3, 6, 5, 3, 6}
 	bclabels := []string{"S0", "S1", "S2", "S3", "S4", "S5"}
 	bc.BorderLabel = "Bar Chart"
@@ -22,15 +22,15 @@ func main() {
 	bc.Width = 26
 	bc.Height = 10
 	bc.DataLabels = bclabels
-	bc.TextColor = termui.ColorGreen
-	bc.BarColor = termui.ColorRed
-	bc.NumColor = termui.ColorYellow
+	bc.TextColor = vermui.ColorGreen
+	bc.BarColor = vermui.ColorRed
+	bc.NumColor = vermui.ColorYellow
 
-	termui.Render(bc)
+	vermui.Render(bc)
 
-	termui.Handle("/sys/kbd/q", func(termui.Event) {
-		termui.StopLoop()
+	vermui.Handle("/sys/kbd/q", func(vermui.Event) {
+		vermui.StopLoop()
 	})
-	termui.Loop()
+	vermui.Loop()
 
 }

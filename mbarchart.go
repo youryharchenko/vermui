@@ -2,7 +2,7 @@
 // Use of this source code is governed by a MIT license that can
 // be found in the LICENSE file.
 
-package termui
+package vermui
 
 import (
 	"fmt"
@@ -11,7 +11,7 @@ import (
 // This is the implementation of multi-colored or stacked bar graph.  This is different from default barGraph which is implemented in bar.go
 // Multi-Colored-BarChart creates multiple bars in a widget:
 /*
-   bc := termui.NewMBarChart()
+   bc := vermui.NewMBarChart()
    data := make([][]int, 2)
    data[0] := []int{3, 2, 5, 7, 9, 4}
    data[1] := []int{7, 8, 5, 3, 1, 6}
@@ -21,9 +21,9 @@ import (
    bc.Width = 26
    bc.Height = 10
    bc.DataLabels = bclabels
-   bc.TextColor = termui.ColorGreen
-   bc.BarColor = termui.ColorRed
-   bc.NumColor = termui.ColorYellow
+   bc.TextColor = vermui.ColorGreen
+   bc.BarColor = vermui.ColorRed
+   bc.NumColor = vermui.ColorYellow
 */
 type MBarChart struct {
 	Block

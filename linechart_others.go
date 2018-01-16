@@ -4,7 +4,7 @@
 
 // +build !windows
 
-package termui
+package vermui
 
 const VDASH = '┊'
 const HDASH = '┈'

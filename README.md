@@ -1,8 +1,8 @@
-# termui [![Build Status](https://travis-ci.org/verdverm/termui.svg?branch=master)](https://travis-ci.org/verdverm/termui) [![Doc Status](https://godoc.org/github.com/verdverm/termui?status.png)](https://godoc.org/github.com/verdverm/termui)
+# vermui [![Build Status](https://travis-ci.org/verdverm/vermui.svg?branch=master)](https://travis-ci.org/verdverm/vermui) [![Doc Status](https://godoc.org/github.com/verdverm/vermui?status.png)](https://godoc.org/github.com/verdverm/vermui)
 
 <img src="./_example/dashboard.gif" alt="demo cast under osx 10.10; Terminal.app; Menlo Regular 12pt.)" width="80%">
 
-`termui` is a cross-platform, easy-to-compile, and fully-customizable terminal dashboard. It is inspired by [blessed-contrib](https://github.com/yaronn/blessed-contrib), but purely in Go.
+`vermui` is a cross-platform, easy-to-compile, and fully-customizable terminal dashboard. It is inspired by [blessed-contrib](https://github.com/yaronn/blessed-contrib), but purely in Go.
 
 Now version v2 has arrived! It brings new event system, new theme system, new `Buffer` interface and specific colour text rendering. (some docs are missing, but it will be completed soon!)
 
@@ -10,23 +10,23 @@ Now version v2 has arrived! It brings new event system, new theme system, new `B
 
 `master` mirrors v2 branch, to install:
 
-	go get -u github.com/verdverm/termui
+	go get -u github.com/verdverm/vermui
 
-It is recommanded to use locked deps by using `dep` move to `termui` src directory then run `glide up`.
+It is recommanded to use locked deps by using `dep` move to `vermui` src directory then run `glide up`.
 
 
 ## Usage
 
 ### Layout
 
-To use `termui`, the very first thing you may want to know is how to manage layout. `termui` offers two ways of doing this, known as absolute layout and grid layout.
+To use `vermui`, the very first thing you may want to know is how to manage layout. `vermui` offers two ways of doing this, known as absolute layout and grid layout.
 
 __Absolute layout__
 
 Each widget has an underlying block structure which basically is a box model. It has border, label and padding properties. A border of a widget can be chosen to hide or display (with its border label), you can pick a different front/back colour for the border as well. To display such a widget at a specific location in terminal window, you need to assign `.X`, `.Y`, `.Height`, `.Width` values for each widget before sending it to `.Render`. Let's demonstrate these by a code snippet:
 
 `````go
-	import ui "github.com/verdverm/termui" // <- ui shortcut, optional
+	import ui "github.com/verdverm/vermui" // <- ui shortcut, optional
 
 	func main() {
 		err := ui.Init()
@@ -67,7 +67,7 @@ __Grid layout:__
 Grid layout uses [12 columns grid system](http://www.w3schools.com/bootstrap/bootstrap_grid_system.asp) with expressive syntax. To use `Grid`, all we need to do is build a widget tree consisting of `Row`s and `Col`s (Actually a `Col` is also a `Row` but with a widget endpoint attached).
 
 ```go
-	import ui "github.com/verdverm/termui"
+	import ui "github.com/verdverm/vermui"
 	// init and create widgets...
 
 	// build
@@ -88,7 +88,7 @@ Grid layout uses [12 columns grid system](http://www.w3schools.com/bootstrap/boo
 
 ### Events
 
-`termui` ships with a http-like event mux handling system. All events are channeled up from different sources (typing, click, windows resize, custom event) and then encoded as universal `Event` object. `Event.Path` indicates the event type and `Event.Data` stores the event data struct. Add a handler to a certain event is easy as below:
+`vermui` ships with a http-like event mux handling system. All events are channeled up from different sources (typing, click, windows resize, custom event) and then encoded as universal `Event` object. `Event.Path` indicates the event type and `Event.Data` stores the event data struct. Add a handler to a certain event is easy as below:
 
 ```go
 	// handle key q pressing
@@ -121,18 +121,18 @@ Grid layout uses [12 columns grid system](http://www.w3schools.com/bootstrap/boo
 
 Click image to see the corresponding demo codes.
 
-[<img src="./_example/par.png" alt="par" type="image/png" width="45%">](https://github.com/verdverm/termui/blob/master/_example/par.go)
-[<img src="./_example/list.png" alt="list" type="image/png" width="45%">](https://github.com/verdverm/termui/blob/master/_example/list.go)
-[<img src="./_example/gauge.png" alt="gauge" type="image/png" width="45%">](https://github.com/verdverm/termui/blob/master/_example/gauge.go)
-[<img src="./_example/linechart.png" alt="linechart" type="image/png" width="45%">](https://github.com/verdverm/termui/blob/master/_example/linechart.go)
-[<img src="./_example/barchart.png" alt="barchart" type="image/png" width="45%">](https://github.com/verdverm/termui/blob/master/_example/barchart.go)
-[<img src="./_example/mbarchart.png" alt="barchart" type="image/png" width="45%">](https://github.com/verdverm/termui/blob/master/_example/mbarchart.go)
-[<img src="./_example/sparklines.png" alt="sparklines" type="image/png" width="45%">](https://github.com/verdverm/termui/blob/master/_example/sparklines.go)
-[<img src="./_example/table.png" alt="table" type="image/png" width="45%">](https://github.com/verdverm/termui/blob/master/_example/table.go)
+[<img src="./_example/par.png" alt="par" type="image/png" width="45%">](https://github.com/verdverm/vermui/blob/master/_example/par.go)
+[<img src="./_example/list.png" alt="list" type="image/png" width="45%">](https://github.com/verdverm/vermui/blob/master/_example/list.go)
+[<img src="./_example/gauge.png" alt="gauge" type="image/png" width="45%">](https://github.com/verdverm/vermui/blob/master/_example/gauge.go)
+[<img src="./_example/linechart.png" alt="linechart" type="image/png" width="45%">](https://github.com/verdverm/vermui/blob/master/_example/linechart.go)
+[<img src="./_example/barchart.png" alt="barchart" type="image/png" width="45%">](https://github.com/verdverm/vermui/blob/master/_example/barchart.go)
+[<img src="./_example/mbarchart.png" alt="barchart" type="image/png" width="45%">](https://github.com/verdverm/vermui/blob/master/_example/mbarchart.go)
+[<img src="./_example/sparklines.png" alt="sparklines" type="image/png" width="45%">](https://github.com/verdverm/vermui/blob/master/_example/sparklines.go)
+[<img src="./_example/table.png" alt="table" type="image/png" width="45%">](https://github.com/verdverm/vermui/blob/master/_example/table.go)
 
 ## GoDoc
 
-[godoc](https://godoc.org/github.com/verdverm/termui)
+[godoc](https://godoc.org/github.com/verdverm/vermui)
 
 ## TODO
 

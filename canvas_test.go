@@ -4,7 +4,7 @@
 
 // +build ignore
 
-package termui
+package vermui
 
 import (
 	"testing"

@@ -1,6 +1,6 @@
 // writen in 2017 by cnaize
 
-package termui
+package vermui
 
 // Unit implementations of Blocks
 

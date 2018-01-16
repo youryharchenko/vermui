@@ -1,7 +1,7 @@
 package tabview
 
 import (
-	ui "github.com/verdverm/termui"
+	ui "github.com/verdverm/vermui"
 )
 
 type TabView struct {

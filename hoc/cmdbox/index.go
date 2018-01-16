@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	ui "github.com/verdverm/termui"
+	ui "github.com/verdverm/vermui"
 )
 
 const emptyMsg = "press 'Ctrl-<space>' to enter a command"

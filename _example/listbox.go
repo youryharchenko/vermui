@@ -8,7 +8,7 @@
 
 package main
 
-import ui "github.com/verdverm/termui"
+import ui "github.com/verdverm/vermui"
 
 func main() {
 	err := ui.Init()
@@ -18,7 +18,7 @@ func main() {
 	defer ui.Close()
 
 	strs := []ui.Item{
-		ui.Item{"github.com/verdverm/termui", "github.com/verdverm/termui"},
+		ui.Item{"github.com/verdverm/vermui", "github.com/verdverm/vermui"},
 		ui.Item{"你好，世界", "[你好，世界](fg-blue)"},
 		ui.Item{"こんにちは世界", "[こんにちは世界](fg-red)"},
 		ui.Item{"color output", "[color output](fg-white,bg-green)"},

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a MIT license that can
 // be found in the LICENSE file.
 
-package termui
+package vermui
 
 import (
 	"strings"
@@ -28,10 +28,10 @@ Example:
 		{"Some Item #2", "BBB", "456", "DDDDD", "FFFFF", "HHHHH", "JJJJJ"},
 	}
 
-	table := termui.NewTable()
+	table := vermui.NewTable()
 	table.Rows = data  // type [][]string
-	table.FgColor = termui.ColorWhite
-	table.BgColor = termui.ColorDefault
+	table.FgColor = vermui.ColorWhite
+	table.BgColor = vermui.ColorDefault
 	table.Height = 7
 	table.Width = 62
 	table.Y = 0

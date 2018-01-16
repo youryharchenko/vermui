@@ -1,9 +1,9 @@
 package base
 
 import (
-	ui "github.com/verdverm/termui"
+	ui "github.com/verdverm/vermui"
 
-	"github.com/verdverm/termui/layout/abstract"
+	"github.com/verdverm/vermui/layout/abstract"
 )
 
 type Layout struct {

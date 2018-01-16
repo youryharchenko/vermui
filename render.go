@@ -2,7 +2,7 @@
 // Use of this source code is governed by a MIT license that can
 // be found in the LICENSE file.
 
-package termui
+package vermui
 
 import (
 	"image"
@@ -27,7 +27,7 @@ type Bufferer interface {
 	Buffer() Buffer
 }
 
-// Init initializes termui library. This function should be called before any others.
+// Init initializes vermui library. This function should be called before any others.
 // After initialization, the library must be finalized by 'Close' function.
 func Init() error {
 	if err := tm.Init(); err != nil {
@@ -70,8 +70,8 @@ func Init() error {
 	return nil
 }
 
-// Close finalizes termui library,
-// should be called after successful initialization when termui's functionality isn't required anymore.
+// Close finalizes vermui library,
+// should be called after successful initialization when vermui's functionality isn't required anymore.
 func Close() {
 	tm.Close()
 }
@@ -103,7 +103,7 @@ func render(bs ...Bufferer) {
 	defer func() {
 		if e := recover(); e != nil {
 			Close()
-			fmt.Fprintf(os.Stderr, "Captured a panic(value=%v) when rendering Bufferer. Exit termui and clean terminal...\nPrint stack trace:\n\n", e)
+			fmt.Fprintf(os.Stderr, "Captured a panic(value=%v) when rendering Bufferer. Exit vermui and clean terminal...\nPrint stack trace:\n\n", e)
 			//debug.PrintStack()
 			gs, err := stack.ParseDump(bytes.NewReader(debug.Stack()), os.Stderr)
 			if err != nil {

@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	ui "github.com/verdverm/termui"
+	ui "github.com/verdverm/vermui"
 )
 
 type ErrorConsoleWidget struct {

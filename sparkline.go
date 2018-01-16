@@ -2,15 +2,15 @@
 // Use of this source code is governed by a MIT license that can
 // be found in the LICENSE file.
 
-package termui
+package vermui
 
 // Sparkline is like: ▅▆▂▂▅▇▂▂▃▆▆▆▅▃. The data points should be non-negative integers.
 /*
   data := []int{4, 2, 1, 6, 3, 9, 1, 4, 2, 15, 14, 9, 8, 6, 10, 13, 15, 12, 10, 5, 3, 6, 1}
-  spl := termui.NewSparkline()
+  spl := vermui.NewSparkline()
   spl.Data = data
   spl.Title = "Sparkline 0"
-  spl.LineColor = termui.ColorGreen
+  spl.LineColor = vermui.ColorGreen
 */
 type Sparkline struct {
 	Data          []int
@@ -25,7 +25,7 @@ type Sparkline struct {
 
 // Sparklines is a renderable widget which groups together the given sparklines.
 /*
-  spls := termui.NewSparklines(spl0,spl1,spl2) //...
+  spls := vermui.NewSparklines(spl0,spl1,spl2) //...
   spls.Height = 2
   spls.Width = 20
 */

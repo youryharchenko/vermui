@@ -1,7 +1,7 @@
 package streamtable
 
 import (
-	ui "github.com/verdverm/termui"
+	ui "github.com/verdverm/vermui"
 )
 
 type StreamTableSource func(chan string) chan interface{}

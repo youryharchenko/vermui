@@ -6,18 +6,18 @@
 
 package main
 
-import "github.com/verdverm/termui"
+import "github.com/verdverm/vermui"
 
 func main() {
-	err := termui.Init()
+	err := vermui.Init()
 	if err != nil {
 		panic(err)
 	}
-	defer termui.Close()
+	defer vermui.Close()
 
-	//termui.UseTheme("helloworld")
+	//vermui.UseTheme("helloworld")
 
-	bc := termui.NewMBarChart()
+	bc := vermui.NewMBarChart()
 	math := []int{90, 85, 90, 80}
 	english := []int{70, 85, 75, 60}
 	science := []int{75, 60, 80, 85}
@@ -36,19 +36,19 @@ func main() {
 	bc.ShowScale = true //Show y_axis scale value (min and max)
 	bc.SetMax(400)
 
-	bc.TextColor = termui.ColorGreen    //this is color for label (x-axis)
-	bc.BarColor[3] = termui.ColorGreen  //BarColor for computerscience
-	bc.BarColor[1] = termui.ColorYellow //Bar Color for english
-	bc.NumColor[3] = termui.ColorRed    // Num color for computerscience
-	bc.NumColor[1] = termui.ColorRed    // num color for english
+	bc.TextColor = vermui.ColorGreen    //this is color for label (x-axis)
+	bc.BarColor[3] = vermui.ColorGreen  //BarColor for computerscience
+	bc.BarColor[1] = vermui.ColorYellow //Bar Color for english
+	bc.NumColor[3] = vermui.ColorRed    // Num color for computerscience
+	bc.NumColor[1] = vermui.ColorRed    // num color for english
 
 	//Other colors are automatically populated, btw All the students seems do well in computerscience. :p
 
-	termui.Render(bc)
+	vermui.Render(bc)
 
-	termui.Handle("/sys/kbd/q", func(termui.Event) {
-		termui.StopLoop()
+	vermui.Handle("/sys/kbd/q", func(vermui.Event) {
+		vermui.StopLoop()
 	})
-	termui.Loop()
+	vermui.Loop()
 
 }
