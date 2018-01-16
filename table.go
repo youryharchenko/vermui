@@ -42,14 +42,16 @@ Example:
 // Table tracks all the attributes of a Table instance
 type Table struct {
 	Block
-	Rows      [][]string
-	CellWidth []int
-	FgColor   Attribute
-	BgColor   Attribute
-	FgColors  []Attribute
-	BgColors  []Attribute
-	Separator bool
-	TextAlign Align
+	Rows         [][]string
+	CellWidth    []int
+	FgColor      Attribute
+	BgColor      Attribute
+	FgColors     []Attribute
+	BgColors     []Attribute
+	CellFgColors [][]Attribute
+	CellBgColors [][]Attribute
+	Separator    bool
+	TextAlign    Align
 	sync.Mutex
 }
 
@@ -78,11 +80,19 @@ func (table *Table) analysis() [][]Cell {
 		return rowCells
 	}
 
-	if len(table.FgColors) == 0 {
-		table.FgColors = make([]Attribute, len(table.Rows))
+	if len(table.FgColors) != length {
+		table.FgColors = make([]Attribute, length)
+		table.CellFgColors = make([][]Attribute, length)
+		for y, row := range table.Rows {
+			table.CellFgColors[y] = make([]Attribute, len(row))
+		}
 	}
 	if len(table.BgColors) == 0 {
 		table.BgColors = make([]Attribute, len(table.Rows))
+		table.CellBgColors = make([][]Attribute, length)
+		for y, row := range table.Rows {
+			table.CellBgColors[y] = make([]Attribute, len(row))
+		}
 	}
 
 	cellWidths := make([]int, len(table.Rows[0]))
@@ -90,12 +100,18 @@ func (table *Table) analysis() [][]Cell {
 	for y, row := range table.Rows {
 		if table.FgColors[y] == 0 {
 			table.FgColors[y] = table.FgColor
+			for x := range row {
+				table.CellFgColors[y][x] = table.FgColor
+			}
 		}
 		if table.BgColors[y] == 0 {
 			table.BgColors[y] = table.BgColor
+			for x := range row {
+				table.CellBgColors[y][x] = table.BgColor
+			}
 		}
 		for x, str := range row {
-			cells := DefaultTxBuilder.Build(str, table.FgColors[y], table.BgColors[y])
+			cells := DefaultTxBuilder.Build(str, table.CellFgColors[y][x], table.CellBgColors[y][x])
 			cw := cellsWidth(cells)
 			if cellWidths[x] < cw {
 				cellWidths[x] = cw
