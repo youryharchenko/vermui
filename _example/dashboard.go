@@ -82,13 +82,13 @@ func main() {
 
 	lc := ui.NewLineChart()
 	lc.BorderLabel = "dot-mode Line Chart"
-	lc.Data = sinps
+	lc.Data["lc"] = sinps
 	lc.Width = 50
 	lc.Height = 11
 	lc.X = 0
 	lc.Y = 14
 	lc.AxesColor = ui.ColorWhite
-	lc.LineColor = ui.ColorRed | ui.AttrBold
+	lc.LineColor["lc"] = ui.ColorRed | ui.AttrBold
 	lc.Mode = "dot"
 
 	bc := ui.NewBarChart()
@@ -105,13 +105,13 @@ func main() {
 
 	lc1 := ui.NewLineChart()
 	lc1.BorderLabel = "braille-mode Line Chart"
-	lc1.Data = sinps
+	lc1.Data["lc1"] = sinps
 	lc1.Width = 26
 	lc1.Height = 11
 	lc1.X = 51
 	lc1.Y = 14
 	lc1.AxesColor = ui.ColorWhite
-	lc1.LineColor = ui.ColorYellow | ui.AttrBold
+	lc1.LineColor["lc1"] = ui.ColorYellow | ui.AttrBold
 
 	p1 := ui.NewPar("Hey!\nI am a borderless block!")
 	p1.Border = false
@@ -126,8 +126,8 @@ func main() {
 		list.Items = strs[t%9:]
 		sp.Lines[0].Data = spdata[:30+t%50]
 		sp.Lines[1].Data = spdata[:35+t%50]
-		lc.Data = sinps[t/2%220:]
-		lc1.Data = sinps[2*t%220:]
+		lc.Data["lc"] = sinps[t/2%220:]
+		lc1.Data["lc1"] = sinps[2*t%220:]
 		bc.Data = bcdata[t/2%10:]
 		ui.Render(p, list, g, sp, lc, bc, lc1, p1)
 	}
