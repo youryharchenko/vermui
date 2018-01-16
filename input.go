@@ -4,7 +4,7 @@ import (
 	"strconv"
 	"strings"
 
-	termbox "github.com/nsf/termbox-go"
+	termbox "github.com/verdverm/termbox-go"
 )
 
 // default mappings between /sys/kbd events and multi-line inputs

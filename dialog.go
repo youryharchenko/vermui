@@ -7,7 +7,7 @@ package vermui
 import (
 	"strings"
 
-	termbox "github.com/nsf/termbox-go"
+	termbox "github.com/verdverm/termbox-go"
 )
 
 var activeDialogItem int

@@ -11,7 +11,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/nsf/termbox-go"
+	"github.com/verdverm/termbox-go"
 )
 
 type Event struct {
@@ -52,14 +52,14 @@ func evtKbd(e termbox.Event) EvtKbd {
 			k = string('a' - 1 + int(e.Key))
 			kmap := map[termbox.Key][2]string{
 				termbox.KeyCtrlSpace:     {"C-", "<space>"},
-				termbox.KeyBackspace:     {"", "<backspace>"},
+				termbox.KeyBackspace:     {"C-", "h"},
+				termbox.KeyBackspace2:    {"", "<backspace>"},
 				termbox.KeyTab:           {"", "<tab>"},
 				termbox.KeyEnter:         {"", "<enter>"},
 				termbox.KeyEsc:           {"", "<escape>"},
 				termbox.KeyCtrlBackslash: {"C-", "\\"},
 				termbox.KeyCtrlSlash:     {"C-", "/"},
 				termbox.KeySpace:         {"", "<space>"},
-				termbox.KeyCtrl8:         {"C-", "8"},
 			}
 			if sk, ok := kmap[e.Key]; ok {
 				pre = sk[0]
