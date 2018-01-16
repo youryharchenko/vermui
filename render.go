@@ -126,12 +126,9 @@ func render(bs ...Bufferer) {
 		// set cels in buf
 		for p, c := range buf.CellMap {
 			if p.In(buf.Area) {
-
 				tm.SetCell(p.X, p.Y, c.Ch, toTmAttr(c.Fg), toTmAttr(c.Bg))
-
 			}
 		}
-
 	}
 
 	renderLock.Lock()
