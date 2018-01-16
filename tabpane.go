@@ -2,12 +2,10 @@
 // Use of this source code is governed by a MIT license that can
 // be found in the LICENSE file.
 
-package extra
+package termui
 
 import (
 	"unicode/utf8"
-
-	. "github.com/gizak/termui"
 )
 
 type Tab struct {
@@ -193,7 +191,7 @@ func (tp *Tabpane) Buffer() Buffer {
 		if i != 0 {
 			pt.X = oftX
 			pt.Y = tp.InnerY()
-			addp := tp.drawPointWithBorder(pt, ' ', VERTICAL_LINE, HORIZONTAL_DOWN, HORIZONTAL_UP)
+			addp := tp.drawPointWithBorder(pt, ' ', VERTICAL_LINE, '┬', '┴')
 			ps = tp.addPoint(ps, &charOffset, &oftX, addp...)
 		}
 
