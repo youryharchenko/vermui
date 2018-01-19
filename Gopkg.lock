@@ -8,6 +8,12 @@
   version = "v1.1.0"
 
 [[projects]]
+  name = "github.com/google/uuid"
+  packages = ["."]
+  revision = "064e2069ce9c359c118179501254f67d7d37ba24"
+  version = "0.2"
+
+[[projects]]
   name = "github.com/maruel/panicparse"
   packages = ["stack"]
   revision = "ad661195ed0e88491e0f14be6613304e3b1141d6"
@@ -22,6 +28,12 @@
   name = "github.com/mitchellh/go-wordwrap"
   packages = ["."]
   revision = "ad45545899c7b13c020ea92b2072220eefad42b8"
+
+[[projects]]
+  name = "github.com/pkg/errors"
+  packages = ["."]
+  revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
+  version = "v0.8.0"
 
 [[projects]]
   name = "github.com/pmezard/go-difflib"
@@ -47,6 +59,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "f4ae0620f1bfebdfc4449a15deefea9732fc40e4ae07841906c90299e2b883fe"
+  inputs-digest = "8159963417159fd1b8cadff65d62069fec9a4656b1aea59fba19196d367e91f7"
   solver-name = "gps-cdcl"
   solver-version = 1
