@@ -1,102 +1,81 @@
 package base
 
 import (
-	ui "github.com/verdverm/vermui"
+	"github.com/pkg/errors"
 
 	"github.com/verdverm/vermui/layouts"
+	"github.com/verdverm/vermui/lib/render"
 )
 
 type Layout struct {
-	Children layouts.Layout
+	width    int
+	Children []layouts.Layout
 }
 
 func New() *Layout {
 	l := &Layout{
-		rows: []*ui.Row{},
+		Children: []layouts.Layout{},
 	}
 
 	return l
 }
 
 // Buffer implements Bufferer interface.
-func (L *Layout) Buffer() Buffer {
-	buf := NewBuffer()
-
-	for _, r := range L.rows {
-		buf.Merge(r.Buffer())
+func (L *Layout) Buffer() render.Buffer {
+	buf := render.NewBuffer()
+	for _, c := range L.Children {
+		buf.Merge(c.Buffer())
 	}
 	return buf
 }
 
-func (L *Layout) Rows() []*ui.Row {
-	rows := []*ui.Row{}
+func (L *Layout) GetWidth() int {
+	return L.width
+}
+func (L *Layout) SetWidth(w int) {
+	L.width = w
+}
 
-	if L.Header != nil {
-		rows = append(rows, L.Header.Rows()...)
+func (L *Layout) Align() {
+	return
+	for _, c := range L.Children {
+		c.Align()
 	}
-
-	if L.Body != nil {
-		rows = append(rows, L.Body.Rows()...)
-	}
-
-	if L.Footer != nil {
-		rows = append(rows, L.Footer.Rows()...)
-	}
-
-	L.rows = rows
-	return L.rows
 }
 
 func (L *Layout) Mount() error {
-	if L.Header != nil {
-		err := L.Header.Mount()
+	for _, c := range L.Children {
+		err := c.Mount()
 		if err != nil {
-			return err
+			errors.Wrapf(err, "in Layout.Mount()")
 		}
 	}
-
-	if L.Body != nil {
-		err := L.Body.Mount()
-		if err != nil {
-			return err
-		}
-	}
-
-	if L.Footer != nil {
-		err := L.Footer.Mount()
-		if err != nil {
-			return err
-		}
-	}
-
-	L.Rows()
-
 	return nil
 }
 
 func (L *Layout) Unmount() error {
-	if L.Header != nil {
-		err := L.Header.Unmount()
+	for _, c := range L.Children {
+		err := c.Unmount()
 		if err != nil {
-			return err
+			errors.Wrapf(err, "in Layout.Unmount()")
 		}
 	}
-
-	if L.Body != nil {
-		err := L.Body.Unmount()
-		if err != nil {
-			return err
-		}
-	}
-
-	if L.Footer != nil {
-		err := L.Footer.Unmount()
-		if err != nil {
-			return err
-		}
-	}
-
-	L.rows = nil
-
 	return nil
+}
+
+func (L *Layout) Show() {
+	for _, c := range L.Children {
+		c.Show()
+	}
+}
+
+func (L *Layout) Hide() {
+	for _, c := range L.Children {
+		c.Hide()
+	}
+}
+
+func (L *Layout) Focus() {
+}
+func (L *Layout) Unfocus() {
 }

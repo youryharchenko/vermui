@@ -327,7 +327,7 @@ var DefaultHandler = func(e Event) {
 
 var usrEvtCh = make(chan Event, 2)
 
-func SendCustomEvt(path string, data interface{}) {
+func SendCustomEvent(path string, data interface{}) {
 	e := Event{}
 	e.Path = path
 	e.Data = data

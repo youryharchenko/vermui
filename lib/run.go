@@ -26,9 +26,14 @@ func Init() error {
 
 	events.Handle("/", events.DefaultHandler)
 	events.Handle("/sys/wnd/resize", func(e events.Event) {
-		// fmt.Println("\n\n\n\nGOT HERE\n\n\n\n")
 		w := e.Data.(events.EvtWnd)
 		rootLayout.SetWidth(w.Width)
+		rootLayout.Align()
+		render.Clear()
+		render.Render(rootLayout)
+	})
+
+	events.Handle("/sys/redraw", func(e events.Event) {
 		rootLayout.Align()
 		render.Clear()
 		render.Render(rootLayout)
@@ -45,6 +50,7 @@ func Start() error {
 
 	rootLayout.SetWidth(render.TermWidth())
 	rootLayout.Align()
+	rootLayout.Mount()
 	render.Clear()
 	render.Render(rootLayout)
 	/*

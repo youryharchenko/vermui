@@ -7,6 +7,7 @@ import (
 
 	"github.com/verdverm/vermui/lib"
 	"github.com/verdverm/vermui/lib/events"
+	"github.com/verdverm/vermui/lib/render"
 )
 
 func Init() error {
@@ -52,4 +53,8 @@ func RemoveGlobalHandler(path string) {
 
 func ClearGlobalHandlers() {
 	lib.ClearGlobalHandlers()
+}
+
+func Render(bs ...render.Bufferer) {
+	lib.Render(bs...)
 }
