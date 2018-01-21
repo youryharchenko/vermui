@@ -1,6 +1,9 @@
 language: go
 
+install: echo "nothing to do, vendor committed to repo"
 go:
+  - 1.8
+  - 1.9
   - tip
 
 script: cd demo && go build *.go
