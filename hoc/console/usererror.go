@@ -22,7 +22,6 @@ func NewErrorConsoleWidget() *ErrorConsoleWidget {
 		messages: []string{},
 	}
 
-	c.BorderLabel = " errors "
 	c.Height = 0
 	c.Border = false
 	c.BorderFg = render.ColorRed
@@ -36,9 +35,11 @@ func (D *ErrorConsoleWidget) Init() {
 	vermui.AddGlobalHandler("/sys/kbd/C-e", func(ev events.Event) {
 		//D.Lock()
 		if D.Height > 0 {
+			D.BorderLabel = ""
 			D.Height = 0
 			D.Border = false
 		} else {
+			D.BorderLabel = " errors "
 			D.Height = 24
 			D.Border = true
 		}

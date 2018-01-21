@@ -9,7 +9,7 @@ import (
 	"github.com/verdverm/vermui/widgets/text"
 )
 
-const emptyMsg = "press 'Ctrl-<space>' to enter a command"
+const emptyMsg = "press 'Ctrl-<space>' to enter a command or '/path/to/something' to navigate"
 const inputRune = "█"
 
 type Command interface {
@@ -18,6 +18,30 @@ type Command interface {
 	CommandHelp() string
 
 	CommandCallback(args []string, context map[string]interface{})
+}
+
+type DefaultCommand struct {
+	Name  string
+	Usage string
+	Help  string
+
+	Callback func(args []string, context map[string]interface{})
+}
+
+func (DC *DefaultCommand) CommandName() string {
+	return DC.Name
+}
+
+func (DC *DefaultCommand) CommandHelp() string {
+	return DC.Help
+}
+
+func (DC *DefaultCommand) CommandUsage() string {
+	return DC.Usage
+}
+
+func (DC *DefaultCommand) CommandCallback(args []string, context map[string]interface{}) {
+	DC.Callback(args, context)
 }
 
 type CmdBoxWidget struct {
@@ -39,12 +63,23 @@ func New() *CmdBoxWidget {
 	return cb
 }
 
-func (CB *CmdBoxWidget) Add(command Command) {
+func (CB *CmdBoxWidget) AddCommandCallback(command string, callback func([]string, map[string]interface{})) Command {
+	c := &DefaultCommand{
+		Name:     command,
+		Usage:    command,
+		Help:     "no help for " + command,
+		Callback: callback,
+	}
+	CB.commands[c.CommandName()] = c
+	return c
+}
+
+func (CB *CmdBoxWidget) AddCommand(command Command) {
 	// go events.SendCustomEvent("/console/info", "adding command: "+command.CommandName())
 	CB.commands[command.CommandName()] = command
 }
 
-func (CB *CmdBoxWidget) Remove(command Command) {
+func (CB *CmdBoxWidget) RemoveCommand(command Command) {
 	delete(CB.commands, command.CommandName())
 }
 
@@ -165,13 +200,12 @@ func (CB *CmdBoxWidget) handleKey(key string) {
 }
 
 func (CB *CmdBoxWidget) Submit(command string, args []string) {
+	if len(command) == 0 {
+		return
+	}
 	command = strings.ToLower(command)
-	if command == "go" {
-		if len(args) == 1 {
-			go events.SendCustomEvent("/router/dispatch", args[0])
-		} else {
-			go events.SendCustomEvent("/user/error", "go command requires path as only argument")
-		}
+	if command[:1] == "/" {
+		go events.SendCustomEvent("/router/dispatch", command)
 		return
 	}
 	cmd, ok := CB.commands[command]

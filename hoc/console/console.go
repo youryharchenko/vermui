@@ -22,7 +22,6 @@ func NewDevConsoleWidget() *DevConsoleWidget {
 		messages: []string{},
 	}
 
-	c.BorderLabel = " console "
 	c.Height = 0
 	c.Border = false
 	c.BorderFg = render.ColorGreen
@@ -36,9 +35,11 @@ func (D *DevConsoleWidget) Init() {
 	vermui.AddGlobalHandler("/sys/kbd/C-l", func(ev events.Event) {
 		D.Lock()
 		if D.Height > 0 {
+			D.BorderLabel = ""
 			D.Height = 0
 			D.Border = false
 		} else {
+			D.BorderLabel = " console "
 			D.Height = 24
 			D.Border = true
 		}

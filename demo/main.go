@@ -12,6 +12,7 @@ import (
 func main() {
 	fmt.Println("Welcome to VermUI")
 
+	// initialize VermUI first
 	err := vermui.Init()
 	if err != nil {
 		vermui.Stop()
@@ -19,17 +20,23 @@ func main() {
 		os.Exit(1)
 	}
 
+	// build our routing and layouts, give them to VermUI
 	layout := buildLayout()
 	vermui.SetLayout(layout)
 
-	// lib.Render(p) // feel free to call Render, it's async and non-block
-
-	// handle key C-c pressing
+	// Handler: press <Ctrl>-c to quit
 	vermui.AddGlobalHandler("/sys/kbd/C-c", func(events.Event) {
-		// press q to quit
 		vermui.Stop()
 	})
 
-	go events.SendCustomEvent("/router/dispatch", "/p")
-	vermui.Start() // block until Stop is called
+	// Handler: press <home> to go to main screen
+	vermui.AddGlobalHandler("/sys/kbd/<home>", func(events.Event) {
+		go events.SendCustomEvent("/router/dispatch", "/home")
+	})
+
+	// go to the initial route/view
+	go events.SendCustomEvent("/router/dispatch", "/home")
+
+	// block until Stop is called
+	vermui.Start()
 }
