@@ -26,6 +26,7 @@ go build
 ./demo
 ```
 
+[demo recording(https://asciinema.org/a/6wphSi1O1igQIuUFF9mn8WiAG.png?theme=solarized-dark)](https://asciinema.org/a/6wphSi1O1igQIuUFF9mn8WiAG?theme=solarized-dark)
 
 
 ### Some Code
