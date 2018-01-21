@@ -26,9 +26,8 @@ go build
 ./demo
 ```
 
-[![demo recording](https://asciinema.org/a/158389.png?t=1&theme=solarized-dark)](https://asciinema.org/a/158389?theme=solarized-dark)
-
-[![sneak peek](https://asciinema.org/a/158390.png)](https://asciinema.org/a/158390?theme=solarized-dark)  <!-- .element height="50%" width="100%" -->
+[![demo recording](https://asciinema.org/a/158389.png?t=1&theme=solarized-dark)<!-- .element width="45%" -->](https://asciinema.org/a/158389?theme=solarized-dark)
+[![sneak peek](https://asciinema.org/a/158390.png)<!-- .element width="45%" -->](https://asciinema.org/a/158390?theme=solarized-dark)  
 
 ### Some Code
 
