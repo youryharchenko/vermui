@@ -5,185 +5,11 @@
 
 package grid
 
-import "github.com/verdverm/vermui/lib/render"
+import (
+	"sync"
 
-// GridBufferer introduces a Bufferer that can be manipulated by Grid.
-type GridBufferer interface {
-	render.Bufferer
-	GetHeight() int
-	SetWidth(int)
-	SetX(int)
-	SetY(int)
-}
-
-// Row builds a layout tree
-type Row struct {
-	Cols   []*Row       //children
-	Widget GridBufferer // root
-	X      int
-	Y      int
-	Width  int
-	Height int
-	Span   int
-	Offset int
-}
-
-// calculate and set the underlying layout tree's x, y, height and width.
-func (r *Row) calcLayout() {
-	r.assignWidth(r.Width)
-	r.Height = r.solveHeight()
-	r.assignX(r.X)
-	r.assignY(r.Y)
-}
-
-// tell if the node is leaf in the tree.
-func (r *Row) isLeaf() bool {
-	return r.Cols == nil || len(r.Cols) == 0
-}
-
-func (r *Row) isRenderableLeaf() bool {
-	return r.isLeaf() && r.Widget != nil
-}
-
-// assign widgets' (and their parent rows') width recursively.
-func (r *Row) assignWidth(w int) {
-	r.SetWidth(w)
-
-	accW := 0                            // acc span and offset
-	calcW := make([]int, len(r.Cols))    // calculated width
-	calcOftX := make([]int, len(r.Cols)) // computed start position of x
-
-	for i, c := range r.Cols {
-		accW += c.Span + c.Offset
-		cw := int(float64(c.Span*r.Width) / 12.0)
-
-		if i >= 1 {
-			calcOftX[i] = calcOftX[i-1] +
-				calcW[i-1] +
-				int(float64(r.Cols[i-1].Offset*r.Width)/12.0)
-		}
-
-		// use up the space if it is the last col
-		if i == len(r.Cols)-1 && accW == 12 {
-			cw = r.Width - calcOftX[i]
-		}
-		calcW[i] = cw
-		r.Cols[i].assignWidth(cw)
-	}
-}
-
-// bottom up calc and set rows' (and their widgets') height,
-// return r's total height.
-func (r *Row) solveHeight() int {
-	if r.isRenderableLeaf() {
-		r.Height = r.Widget.GetHeight()
-		return r.Widget.GetHeight()
-	}
-
-	maxh := 0
-	if !r.isLeaf() {
-		for _, c := range r.Cols {
-			nh := c.solveHeight()
-			// when embed rows in Cols, row widgets stack up
-			if r.Widget != nil {
-				nh += r.Widget.GetHeight()
-			}
-			if nh > maxh {
-				maxh = nh
-			}
-		}
-	}
-
-	r.Height = maxh
-	return maxh
-}
-
-// recursively assign x position for r tree.
-func (r *Row) assignX(x int) {
-	r.SetX(x)
-
-	if !r.isLeaf() {
-		acc := 0
-		for i, c := range r.Cols {
-			if c.Offset != 0 {
-				acc += int(float64(c.Offset*r.Width) / 12.0)
-			}
-			r.Cols[i].assignX(x + acc)
-			acc += c.Width
-		}
-	}
-}
-
-// recursively assign y position to r.
-func (r *Row) assignY(y int) {
-	r.SetY(y)
-
-	if r.isLeaf() {
-		return
-	}
-
-	for i := range r.Cols {
-		acc := 0
-		if r.Widget != nil {
-			acc = r.Widget.GetHeight()
-		}
-		r.Cols[i].assignY(y + acc)
-	}
-
-}
-
-// GetHeight implements GridBufferer interface.
-func (r Row) GetHeight() int {
-	return r.Height
-}
-
-// SetX implements GridBufferer interface.
-func (r *Row) SetX(x int) {
-	r.X = x
-	if r.Widget != nil {
-		r.Widget.SetX(x)
-	}
-}
-
-// SetY implements GridBufferer interface.
-func (r *Row) SetY(y int) {
-	r.Y = y
-	if r.Widget != nil {
-		r.Widget.SetY(y)
-	}
-}
-
-// SetWidth implements GridBufferer interface.
-func (r *Row) SetWidth(w int) {
-	r.Width = w
-	if r.Widget != nil {
-		r.Widget.SetWidth(w)
-	}
-}
-
-// Buffer implements Bufferer interface,
-// recursively merge all widgets buffer
-func (r *Row) Buffer() render.Buffer {
-	merged := render.NewBuffer()
-
-	if r.isRenderableLeaf() {
-		return r.Widget.Buffer()
-	}
-
-	// for those are not leaves but have a renderable widget
-	if r.Widget != nil {
-		merged.Merge(r.Widget.Buffer())
-	}
-
-	// collect buffer from children
-	if !r.isLeaf() {
-		for _, c := range r.Cols {
-			merged.Merge(c.Buffer())
-		}
-	}
-
-	return merged
-}
+	"github.com/verdverm/vermui/lib/render"
+)
 
 // Grid implements 12 columns system.
 // A simple example:
@@ -207,8 +33,10 @@ func (r *Row) Buffer() render.Buffer {
    ui.Render(ui.Body)
 */
 type Grid struct {
+	sync.Mutex
 	Rows    []*Row
 	Width   int
+	Height  int
 	X       int
 	Y       int
 	BgColor render.Attribute
@@ -236,7 +64,9 @@ func NewCol(span, offset int, widgets ...GridBufferer) *Row {
 	r := &Row{Span: span, Offset: offset}
 
 	if widgets != nil && len(widgets) == 1 {
+
 		wgt := widgets[0]
+		// go events.SendCustomEvent("/console/debug", fmt.Sprintf("Col widget type: %q", reflect.TypeOf(wgt)))
 		nw, isRow := wgt.(*Row)
 		if isRow {
 			r.Cols = nw.Cols
@@ -257,28 +87,76 @@ func NewCol(span, offset int, widgets ...GridBufferer) *Row {
 	return r
 }
 
+func (g *Grid) GetX() int {
+	return g.X
+}
+
+func (g *Grid) SetX(x int) {
+	//g.Lock()
+	//defer g.Unlock()
+	g.X = x
+}
+
+func (g *Grid) GetY() int {
+	return g.Y
+}
+
+func (g *Grid) SetY(y int) {
+	//g.Lock()
+	//defer g.Unlock()
+	g.Y = y
+}
+
+func (g *Grid) GetHeight() int {
+	// g.Align()
+	return g.Height
+}
+
+func (g *Grid) SetHeight(h int) {
+	// g.Height = h
+}
+
 func (g *Grid) GetWidth() int {
 	return g.Width
 }
 
 func (g *Grid) SetWidth(w int) {
+	//g.Lock()
+	//defer g.Unlock()
 	g.Width = w
 }
 
 // Align calculate each rows' layout.
 func (g *Grid) Align() {
+	g.calcLayout()
+	g.Lock()
+	defer g.Unlock()
+	for _, r := range g.Rows {
+		r.Align()
+	}
+}
+
+func (g *Grid) calcLayout() {
+
+	g.Lock()
+	defer g.Unlock()
 	h := 0
 	for _, r := range g.Rows {
 		r.SetWidth(g.Width)
 		r.SetX(g.X)
 		r.SetY(g.Y + h)
 		r.calcLayout()
-		h += r.GetHeight()
+		rh := r.GetHeight()
+		h += rh
 	}
+
+	g.Height = h
 }
 
 // Buffer implements Bufferer interface.
 func (g *Grid) Buffer() render.Buffer {
+	g.Lock()
+	defer g.Unlock()
 	buf := render.NewBuffer()
 
 	for _, r := range g.Rows {
@@ -287,8 +165,18 @@ func (g *Grid) Buffer() render.Buffer {
 	return buf
 }
 
-func (g *Grid) Mount() error   { return nil }
-func (g *Grid) Unmount() error { return nil }
+func (g *Grid) Mount() error {
+	for _, row := range g.Rows {
+		row.Mount()
+	}
+	return nil
+}
+func (g *Grid) Unmount() error {
+	for _, row := range g.Rows {
+		row.Unmount()
+	}
+	return nil
+}
 
 func (g *Grid) Show() {}
 func (g *Grid) Hide() {}

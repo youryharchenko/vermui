@@ -29,7 +29,7 @@ func Init() error {
 
 	termSync()
 
-	renderJobs = make(chan []Bufferer, 3)
+	renderJobs = make(chan []Bufferer, 8)
 	return nil
 }
 
@@ -41,27 +41,39 @@ func Start() error {
 // should be called after successful initialization when vermui's functionality isn't required anymore.
 func Stop() error {
 	stopRenderLoop()
+	Clear()
+	termSync()
 	tm.Close()
 	return nil
 }
 
 func TermRect() image.Rectangle {
+	renderLock.Lock()
+	defer renderLock.Unlock()
 	return image.Rect(0, 0, termWidth, termHeight)
 }
 
 // TermWidth returns the current terminal's width.
 func TermWidth() int {
+	renderLock.Lock()
+	defer renderLock.Unlock()
 	return termWidth
 }
 
 // TermHeight returns the current terminal's height.
 func TermHeight() int {
+	renderLock.Lock()
+	defer renderLock.Unlock()
 	return termHeight
 }
 
 func Render(bs ...Bufferer) {
 	//go func() { renderJobs <- bs }()
-	renderJobs <- bs
+	renderLock.Lock()
+	defer renderLock.Unlock()
+	if renderJobs != nil {
+		renderJobs <- bs
+	}
 }
 
 func Clear() error {
@@ -73,6 +85,10 @@ func Clear() error {
 		return errors.Wrapf(err, "in lib.Clear() - tm.Clear()\n")
 	}
 
+	err = tm.Flush()
+	if err != nil {
+		return errors.Wrapf(err, "in vermui.render() - tm.Flush()\n")
+	}
 	return nil
 }
 
@@ -105,8 +121,12 @@ func startRenderLoop() error {
 }
 
 func stopRenderLoop() error {
-	close(renderJobs)
-
+	renderLock.Lock()
+	defer renderLock.Unlock()
+	if renderJobs != nil {
+		close(renderJobs)
+		renderJobs = nil
+	}
 	return nil
 }
 
@@ -128,6 +148,7 @@ func doRender(bs ...Bufferer) error {
 		if e := recover(); e != nil {
 			// Stop VermUI
 			Stop()
+			Clear()
 
 			// Print a formatted panic output
 			fmt.Fprintf(os.Stderr, "Captured a panic(value=%v) when rendering Bufferer. Exit vermui and clean terminal...\nPrint stack trace:\n\n", e)
@@ -152,7 +173,6 @@ func doRender(bs ...Bufferer) error {
 	defer renderLock.Unlock()
 
 	for _, b := range bs {
-
 		buf := b.Buffer()
 		// set cels in buf
 		for p, c := range buf.CellMap {

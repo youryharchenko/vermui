@@ -160,7 +160,7 @@ func hookTermboxEvt() {
 }
 
 func NewSysEvtCh() chan Event {
-	ec := make(chan Event)
+	ec := make(chan Event, 0)
 	sysEvtChs = append(sysEvtChs, ec)
 	return ec
 }
@@ -325,7 +325,7 @@ func NewTimerCh(du time.Duration) chan Event {
 var DefaultHandler = func(e Event) {
 }
 
-var usrEvtCh = make(chan Event, 2)
+var usrEvtCh = make(chan Event, 256)
 
 func SendCustomEvent(path string, data interface{}) {
 	e := Event{}

@@ -2,11 +2,14 @@
 // Use of this source code is governed by a MIT license that can
 // be found in the LICENSE file.
 
-package vermui
+package table
 
 import (
 	"strings"
 	"sync"
+
+	"github.com/verdverm/vermui/layouts/align"
+	"github.com/verdverm/vermui/lib/render"
 )
 
 /* Table is like:
@@ -41,31 +44,32 @@ Example:
 
 // Table tracks all the attributes of a Table instance
 type Table struct {
-	Block
+	render.Block
 	Rows         [][]string
 	CellWidth    []int
-	FgColor      Attribute
-	BgColor      Attribute
-	FgColors     []Attribute
-	BgColors     []Attribute
-	CellFgColors [][]Attribute
-	CellBgColors [][]Attribute
+	FgColor      render.Attribute
+	BgColor      render.Attribute
+	FgColors     []render.Attribute
+	BgColors     []render.Attribute
+	CellFgColors [][]render.Attribute
+	CellBgColors [][]render.Attribute
 	Separator    bool
-	TextAlign    Align
+	TextAlign    align.Align
 	sync.Mutex
 }
 
 // NewTable returns a new Table instance
 func NewTable() *Table {
-	table := &Table{Block: *NewBlock()}
-	table.FgColor = ColorWhite
-	table.BgColor = ColorDefault
+	table := &Table{Block: *render.NewBlock()}
+	table.FgColor = render.ColorWhite
+	table.BgColor = render.ColorDefault
 	table.Separator = true
+	table.Border = true
 	return table
 }
 
 // CellsWidth calculates the width of a cell array and returns an int
-func cellsWidth(cells []Cell) int {
+func cellsWidth(cells []render.Cell) int {
 	width := 0
 	for _, c := range cells {
 		width += c.Width()
@@ -73,25 +77,25 @@ func cellsWidth(cells []Cell) int {
 	return width
 }
 
-func (table *Table) analysis() [][]Cell {
-	var rowCells [][]Cell
+func (table *Table) analysis() [][]render.Cell {
+	var rowCells [][]render.Cell
 	length := len(table.Rows)
 	if length < 1 {
 		return rowCells
 	}
 
 	if len(table.FgColors) != length {
-		table.FgColors = make([]Attribute, length)
-		table.CellFgColors = make([][]Attribute, length)
+		table.FgColors = make([]render.Attribute, length)
+		table.CellFgColors = make([][]render.Attribute, length)
 		for y, row := range table.Rows {
-			table.CellFgColors[y] = make([]Attribute, len(row))
+			table.CellFgColors[y] = make([]render.Attribute, len(row))
 		}
 	}
 	if len(table.BgColors) == 0 {
-		table.BgColors = make([]Attribute, len(table.Rows))
-		table.CellBgColors = make([][]Attribute, length)
+		table.BgColors = make([]render.Attribute, len(table.Rows))
+		table.CellBgColors = make([][]render.Attribute, length)
 		for y, row := range table.Rows {
-			table.CellBgColors[y] = make([]Attribute, len(row))
+			table.CellBgColors[y] = make([]render.Attribute, len(row))
 		}
 	}
 
@@ -111,7 +115,7 @@ func (table *Table) analysis() [][]Cell {
 			}
 		}
 		for x, str := range row {
-			cells := DefaultTxBuilder.Build(str, table.CellFgColors[y][x], table.CellBgColors[y][x])
+			cells := render.DefaultTxBuilder.Build(str, table.CellFgColors[y][x], table.CellBgColors[y][x])
 			cw := cellsWidth(cells)
 			if cellWidths[x] < cw {
 				cellWidths[x] = cw
@@ -124,7 +128,7 @@ func (table *Table) analysis() [][]Cell {
 }
 
 // Analysis generates and returns an array of []Cell that represent all columns in the Table
-func (table *Table) Analysis() [][]Cell {
+func (table *Table) Analysis() [][]render.Cell {
 	table.Lock()
 	defer table.Unlock()
 	return table.analysis()
@@ -150,29 +154,29 @@ func (table *Table) SetSize() {
 
 func (table *Table) calculatePosition(x int, y int, coordinateX *int, coordinateY *int, cellStart *int) {
 	if table.Separator {
-		*coordinateY = table.innerArea.Min.Y + y*2
+		*coordinateY = table.InnerArea().Min.Y + y*2
 	} else {
-		*coordinateY = table.innerArea.Min.Y + y
+		*coordinateY = table.InnerArea().Min.Y + y
 	}
 	if x == 0 {
-		*cellStart = table.innerArea.Min.X
+		*cellStart = table.InnerArea().Min.X
 	} else {
 		*cellStart += table.CellWidth[x-1] + 3
 	}
 
 	switch table.TextAlign {
-	case AlignRight:
+	case align.AlignRight:
 		*coordinateX = *cellStart + (table.CellWidth[x] - len(table.Rows[y][x])) + 2
-	case AlignCenter:
+	case align.AlignCenter:
 		*coordinateX = *cellStart + (table.CellWidth[x]-len(table.Rows[y][x]))/2 + 2
 	default:
 		*coordinateX = *cellStart + 2
 	}
 }
 
-func (table *Table) calculatePosition(x int, y int) (cx, cy int) {
-	tMin := table.innerArea.Min
-	tMax := table.innerArea.Max
+func (table *Table) calculateCell(x int, y int) (cx, cy int) {
+	tMin := table.InnerArea().Min
+	tMax := table.InnerArea().Max
 
 	if x < tMin.X || x > tMax.X || y < tMin.Y || y > tMax.Y {
 		return -1, -1
@@ -194,7 +198,7 @@ func (table *Table) calculatePosition(x int, y int) (cx, cy int) {
 
 	/*
 		if x == 0 {
-			*cellStart = table.innerArea.Min.X
+			*cellStart = table.InnerArea().Min.X
 		} else {
 			*cellStart += table.CellWidth[x-1] + 3
 		}
@@ -225,18 +229,18 @@ func (table *Table) CalculateCell(x int, y int) (cx, cy int) {
 }
 
 // Buffer ...
-func (table *Table) Buffer() Buffer {
+func (table *Table) Buffer() render.Buffer {
 	table.Lock()
 	defer table.Unlock()
 	buffer := table.Block.Buffer()
 	rowCells := table.analysis()
-	pointerX := table.innerArea.Min.X + 2
-	pointerY := table.innerArea.Min.Y
-	borderPointerX := table.innerArea.Min.X
+	pointerX := table.InnerArea().Min.X + 2
+	pointerY := table.InnerArea().Min.Y
+	borderPointerX := table.InnerArea().Min.X
 	for y, row := range table.Rows {
 		for x := range row {
 			table.calculatePosition(x, y, &pointerX, &pointerY, &borderPointerX)
-			background := DefaultTxBuilder.Build(strings.Repeat(" ", table.CellWidth[x]+3), table.BgColors[y], table.BgColors[y])
+			background := render.DefaultTxBuilder.Build(strings.Repeat(" ", table.CellWidth[x]+3), table.BgColors[y], table.BgColors[y])
 			cells := rowCells[y*len(row)+x]
 			for i, back := range background {
 				buffer.Set(borderPointerX+i, pointerY, back)
@@ -249,7 +253,7 @@ func (table *Table) Buffer() Buffer {
 			}
 
 			if x != 0 {
-				dividors := DefaultTxBuilder.Build("|", table.FgColors[y], table.BgColors[y])
+				dividors := render.DefaultTxBuilder.Build("|", table.FgColors[y], table.BgColors[y])
 				for _, dividor := range dividors {
 					buffer.Set(borderPointerX, pointerY, dividor)
 				}
@@ -257,7 +261,7 @@ func (table *Table) Buffer() Buffer {
 		}
 
 		if table.Separator {
-			border := DefaultTxBuilder.Build(strings.Repeat("─", table.Width-2), table.FgColor, table.BgColor)
+			border := render.DefaultTxBuilder.Build(strings.Repeat("─", table.Width-2), table.FgColor, table.BgColor)
 			for i, cell := range border {
 				buffer.Set(i+1, pointerY+1, cell)
 			}
@@ -280,8 +284,8 @@ func (table *Table) SetRows(rows [][]string) {
 	/* we intentionally do not deallocate unnecessary colors. They are not used and we keep them "chached" */
 	/* caching avoids reallocation and it is relatively unlikely that a table starts very big, decreades a lot and stays like that */
 	if nrNewColors > 0 {
-		newfgs := make([]Attribute, nrNewColors)
-		newbgs := make([]Attribute, nrNewColors)
+		newfgs := make([]render.Attribute, nrNewColors)
+		newbgs := make([]render.Attribute, nrNewColors)
 
 		table.FgColors = append(table.FgColors, newfgs...)
 		table.BgColors = append(table.BgColors, newbgs...)

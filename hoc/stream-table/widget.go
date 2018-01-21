@@ -1,14 +1,17 @@
 package streamtable
 
 import (
-	ui "github.com/verdverm/vermui"
+	"github.com/verdverm/vermui"
+	"github.com/verdverm/vermui/layouts/align"
+	"github.com/verdverm/vermui/lib/render"
+	"github.com/verdverm/vermui/widgets/table"
 )
 
 type StreamTableSource func(chan string) chan interface{}
 type StreamTableFormatter func(interface{}) [][]string
 
 type StreamTable struct {
-	*ui.Table
+	*table.Table
 
 	TableHeader   [][]string
 	DataSource    StreamTableSource
@@ -21,15 +24,15 @@ type StreamTable struct {
 
 func NewStreamTable(header [][]string, source StreamTableSource, formatter StreamTableFormatter) *StreamTable {
 	ST := &StreamTable{
-		Table:         ui.NewTable(),
+		Table:         table.NewTable(),
 		TableHeader:   header,
 		DataSource:    source,
 		DataFormatter: formatter,
 	}
 
-	ST.Table.FgColor = ui.ColorWhite
-	ST.Table.BgColor = ui.ColorDefault
-	ST.Table.TextAlign = ui.AlignCenter
+	ST.Table.FgColor = render.ColorWhite
+	ST.Table.BgColor = render.ColorDefault
+	ST.Table.TextAlign = align.AlignCenter
 	ST.Table.Separator = false
 	ST.Table.Border = false
 	ST.Table.Height = 0
@@ -38,6 +41,13 @@ func NewStreamTable(header [][]string, source StreamTableSource, formatter Strea
 	ST.DataCommands = make(chan string, 2)
 
 	return ST
+}
+
+func (ST *StreamTable) Mount() error {
+	return nil
+}
+func (ST *StreamTable) Unmount() error {
+	return nil
 }
 
 func (ST *StreamTable) Show() {
@@ -85,6 +95,7 @@ func (ST *StreamTable) UpdateData(input interface{}) {
 		}
 		ST.Table.Analysis()
 		ST.Table.SetSize()
-		ui.Render(ST.Table)
 	}
+	vermui.Render(ST)
+
 }

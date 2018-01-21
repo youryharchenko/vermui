@@ -484,7 +484,7 @@ func extract_event(inbuf []byte, event *Event, allow_esc_wait bool) extract_even
 			// if we're in alt mode...
 
 			// Add... then assume <escape>
-			if len(inbuf) == 0 {
+			if len(inbuf) == 1 {
 				event.Ch = 0
 				event.Key = KeyEsc
 				event.Mod = 0

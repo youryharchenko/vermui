@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"strings"
 
-	ui "github.com/verdverm/vermui"
+	"github.com/verdverm/vermui/lib/events"
+	"github.com/verdverm/vermui/lib/render"
+	"github.com/verdverm/vermui/widgets/text"
 )
 
 const emptyMsg = "press 'Ctrl-<space>' to enter a command"
@@ -19,25 +21,26 @@ type Command interface {
 }
 
 type CmdBoxWidget struct {
-	*ui.Par
+	*text.Par
 
 	commands map[string]Command
 }
 
 func New() *CmdBoxWidget {
 	cb := &CmdBoxWidget{
-		Par:      ui.NewPar(emptyMsg),
+		Par:      text.NewPar(emptyMsg),
 		commands: make(map[string]Command),
 	}
 	cb.Height = 3
 	cb.PaddingLeft = 1
-	cb.BorderFg = ui.ColorBlue
-	cb.BorderLabelFg = ui.StringToAttribute("red,bold")
+	cb.BorderFg = render.ColorBlue
+	cb.BorderLabelFg = render.StringToAttribute("red,bold")
+
 	return cb
 }
 
 func (CB *CmdBoxWidget) Add(command Command) {
-	// go ui.SendCustomEvt("/console/info", "adding command: "+command.CommandName())
+	// go events.SendCustomEvent("/console/info", "adding command: "+command.CommandName())
 	CB.commands[command.CommandName()] = command
 }
 
@@ -47,51 +50,59 @@ func (CB *CmdBoxWidget) Remove(command Command) {
 
 func (CB *CmdBoxWidget) Mount() error {
 	// fmt.Println("cmdbox Mount")
-	CB.Handle("/sys/kbd/C-<space>", func(e ui.Event) {
+	CB.AddHandler("/sys/kbd/C-<space>", func(e events.Event) {
 		// fmt.Println("cmdbox - look at me!")
-		// go ui.SendCustomEvt("/dev/messages", fmt.Sprint("cmdbox - look at me!", e.Path))
+		// go events.SendCustomEvent("/console/trace", fmt.Sprint("cmdbox - look at me!", e.Path))
 		CB.Focus()
+	})
+
+	CB.AddHandler("/user/error", func(e events.Event) {
+		CB.Lock()
+		CB.Text = fmt.Sprintf("[Error](bg-red,fg-bold): [%v](fg-yellow)", e.Data)
+		CB.Unlock()
+
+		render.Render(CB)
 	})
 
 	return nil
 }
 func (CB *CmdBoxWidget) Unmount() error {
 	// fmt.Println("cmdbox - bye bye!")
-	CB.RemoveHandle("/sys/kbd/C-<space>")
+	CB.RemoveHandler("/sys/kbd/C-<space>")
+	CB.RemoveHandler("/user/error")
 
 	return nil
 }
 
 func (CB *CmdBoxWidget) Focus() error {
-	// fmt.Println("cmdbox - pay attention!")
-	CB.BorderFg = ui.ColorRed
-	CB.BorderLabelFg = ui.StringToAttribute("bold,blue")
-	CB.BorderLabelBg = ui.ColorDefault
+	CB.Lock()
+	CB.BorderFg = render.ColorRed
+	CB.BorderLabelFg = render.StringToAttribute("bold,blue")
+	CB.BorderLabelBg = render.ColorDefault
 	CB.Text = inputRune
+	CB.Unlock()
 
-	CB.Handle("/sys/kbd", func(e ui.Event) {
-		// go ui.SendCustomEvt("/dev/messages", fmt.Sprint("cmdbox - keyboard!", e.Path))
+	render.Render(CB)
+	CB.AddHandler("/sys/kbd", func(e events.Event) {
 		key := e.Path[9:]
 		CB.handleKey(key)
-	})
-
-	CB.Handle("/user/error", func(e ui.Event) {
-		CB.Text = fmt.Sprintf("[Error](bg-red,fg-bold): [%v](fg-yellow)", e.Data)
-		// CB.BorderFg = ui.ColorWhite
-		// CB.BorderLabelBg = ui.ColorWhite
+		render.Render(CB)
 	})
 
 	return nil
 }
 
 func (CB *CmdBoxWidget) Unfocus() error {
+	CB.Lock()
 	// fmt.Println("cmdbox - you lack focus!")
-	CB.BorderFg = ui.ColorBlue
-	CB.BorderLabelFg = ui.StringToAttribute("red,bold")
+	CB.BorderFg = render.ColorBlue
+	CB.BorderLabelFg = render.StringToAttribute("red,bold")
 	CB.Text = emptyMsg
+	CB.Unlock()
 
-	CB.RemoveHandle("/sys/kbd")
+	go CB.RemoveHandler("/sys/kbd")
 
+	render.Render(CB)
 	return nil
 }
 
@@ -99,6 +110,7 @@ func (CB *CmdBoxWidget) handleKey(key string) {
 	// fmt.Println("cmdbox - key:", key)
 
 	// handle first key after submit
+	CB.Lock()
 	if CB.Text == "Sent!" {
 		CB.Text = ""
 	}
@@ -106,32 +118,41 @@ func (CB *CmdBoxWidget) handleKey(key string) {
 	// strip the input rune
 	CB.Text = strings.TrimSuffix(CB.Text, inputRune)
 	L := len(CB.Text)
+	CB.Unlock()
 
 	// handle key
 	switch key {
 	case "<escape>":
-		CB.Unfocus()
+		go CB.Unfocus()
+		return
 
 	case "<enter>":
 		if L > 0 {
+			CB.Lock()
 			fields := strings.Fields(CB.Text)
+			CB.Unlock()
 			if len(fields) == 1 {
 				CB.Submit(fields[0], nil)
 			} else {
 				CB.Submit(strings.ToLower(fields[0]), fields[1:])
 			}
-			CB.Unfocus()
+			go CB.Unfocus()
+			return
 		}
 
 	case "<backspace>":
+		CB.Lock()
 		if L > 0 {
 			CB.Text = CB.Text[:L-1] + inputRune
 		} else {
 			CB.Text = inputRune
 		}
+		CB.Unlock()
 
 	case "<space>":
+		CB.Lock()
 		CB.Text += " " + inputRune
+		CB.Unlock()
 
 	default:
 		// just one rune allowed, otherwise it's a special charactor
@@ -140,17 +161,25 @@ func (CB *CmdBoxWidget) handleKey(key string) {
 		}
 	}
 
-	ui.Render(CB)
+	render.Render(CB)
 }
 
 func (CB *CmdBoxWidget) Submit(command string, args []string) {
 	command = strings.ToLower(command)
+	if command == "go" {
+		if len(args) == 1 {
+			go events.SendCustomEvent("/router/dispatch", args[0])
+		} else {
+			go events.SendCustomEvent("/user/error", "go command requires path as only argument")
+		}
+		return
+	}
 	cmd, ok := CB.commands[command]
 	if !ok {
 		// render for the user
-		go ui.SendCustomEvt("/user/error", fmt.Sprintf("unknown command %q", command))
+		go events.SendCustomEvent("/user/error", fmt.Sprintf("unknown command %q", command))
 		// log to console
-		go ui.SendCustomEvt("/console/warn", fmt.Sprintf("unknown command %q", command))
+		go events.SendCustomEvent("/console/warn", fmt.Sprintf("unknown command %q", command))
 		return
 	}
 

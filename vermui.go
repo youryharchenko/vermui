@@ -1,6 +1,9 @@
 package vermui
 
 import (
+	"fmt"
+	"os"
+
 	"github.com/pkg/errors"
 
 	"github.com/verdverm/vermui/layouts"
@@ -20,6 +23,15 @@ func Init() error {
 }
 
 func Start() error {
+	defer func() {
+		err := recover()
+		if err != nil {
+			lib.Stop()
+			render.Clear()
+			fmt.Println("ERROR:", err)
+			os.Exit(1)
+		}
+	}()
 	err := lib.Start()
 	if err != nil {
 		return errors.Wrapf(err, "in vermui.Start()\n")

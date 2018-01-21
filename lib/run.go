@@ -1,8 +1,14 @@
 package lib
 
 import (
+	"bytes"
+	"fmt"
+	"io"
+	"os"
+	"runtime/debug"
 	"time"
 
+	"github.com/maruel/panicparse/stack"
 	"github.com/verdverm/vermui/layouts"
 	"github.com/verdverm/vermui/lib/events"
 	"github.com/verdverm/vermui/lib/render"
@@ -34,6 +40,7 @@ func Init() error {
 	})
 
 	events.Handle("/sys/redraw", func(e events.Event) {
+		rootLayout.SetWidth(render.TermWidth())
 		rootLayout.Align()
 		render.Clear()
 		render.Render(rootLayout)
@@ -44,17 +51,39 @@ func Init() error {
 
 // blocking call
 func Start() error {
-	render.Start()
-
-	renderTimer = time.NewTicker(time.Millisecond * 2000)
+	defer func() {
+		e := recover()
+		if e != nil {
+			Stop()
+			// Print a formatted panic output
+			fmt.Fprintf(os.Stderr, "Captured a panic(value=%v) lib.Start()... Exit vermui and clean terminal...\nPrint stack trace:\n\n", e)
+			//debug.PrintStack()
+			gs, err := stack.ParseDump(bytes.NewReader(debug.Stack()), os.Stderr)
+			if err != nil {
+				debug.PrintStack()
+				os.Exit(1)
+			}
+			p := &stack.Palette{}
+			buckets := stack.SortBuckets(stack.Bucketize(gs, stack.AnyValue))
+			srcLen, pkgLen := stack.CalcLengths(buckets, false)
+			for _, bucket := range buckets {
+				io.WriteString(os.Stdout, p.BucketHeader(&bucket, false, len(buckets) > 1))
+				io.WriteString(os.Stdout, p.StackLines(&bucket.Signature, srcLen, pkgLen, false))
+			}
+			os.Exit(1)
+		}
+	}()
 
 	rootLayout.SetWidth(render.TermWidth())
-	rootLayout.Align()
 	rootLayout.Mount()
+	rootLayout.Align()
 	render.Clear()
+	render.Start()
 	render.Render(rootLayout)
+
 	/*
 		go func() {
+			renderTimer = time.NewTicker(time.Millisecond * 200)
 			for range renderTimer.C {
 				render.Clear()
 				if rootLayout.GetWidth() != render.TermWidth() {
@@ -73,10 +102,14 @@ func Start() error {
 // Close finalizes vermui library,
 // should be called after successful initialization when vermui's functionality isn't required anymore.
 func Stop() error {
-	renderTimer.Stop()
-	render.Clear()
+	if renderTimer != nil {
+		renderTimer.Stop()
+
+	}
 	render.Stop()
-	return events.Stop()
+	render.Clear()
+	err := events.Stop()
+	return err
 }
 
 func GetRootLayout() layouts.Layout {

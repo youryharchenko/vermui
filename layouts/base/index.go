@@ -1,6 +1,8 @@
 package base
 
 import (
+	"fmt"
+
 	"github.com/pkg/errors"
 
 	"github.com/verdverm/vermui/layouts"
@@ -8,12 +10,15 @@ import (
 )
 
 type Layout struct {
-	width    int
+	*render.Block
+
+	Parent   layouts.Layout
 	Children []layouts.Layout
 }
 
 func New() *Layout {
 	l := &Layout{
+		Block:    render.NewBlock(),
 		Children: []layouts.Layout{},
 	}
 
@@ -22,6 +27,7 @@ func New() *Layout {
 
 // Buffer implements Bufferer interface.
 func (L *Layout) Buffer() render.Buffer {
+	L.Align()
 	buf := render.NewBuffer()
 	for _, c := range L.Children {
 		buf.Merge(c.Buffer())
@@ -29,21 +35,45 @@ func (L *Layout) Buffer() render.Buffer {
 	return buf
 }
 
-func (L *Layout) GetWidth() int {
-	return L.width
+func (L *Layout) SetX(x int) {
+	L.Block.SetX(x)
+	for _, c := range L.Children {
+		c.SetX(x)
+	}
 }
+func (L *Layout) SetY(y int) {
+	L.Block.SetY(y)
+	h := y
+	for _, c := range L.Children {
+		c.SetY(h)
+		h += c.GetHeight()
+	}
+}
+
+func (L *Layout) GetHeight() int {
+	h := 0
+	for _, c := range L.Children {
+		h += c.GetHeight()
+	}
+	return h
+}
+
 func (L *Layout) SetWidth(w int) {
-	L.width = w
+	L.Block.Width = 0
+	for _, c := range L.Children {
+		c.SetWidth(w)
+	}
 }
 
 func (L *Layout) Align() {
-	return
+	L.Block.Align()
 	for _, c := range L.Children {
 		c.Align()
 	}
 }
 
 func (L *Layout) Mount() error {
+	fmt.Println("layouts.Base.Mount")
 	for _, c := range L.Children {
 		err := c.Mount()
 		if err != nil {

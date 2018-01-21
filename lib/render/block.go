@@ -6,6 +6,7 @@ package render
 
 import (
 	"image"
+	"sync"
 
 	"github.com/google/uuid"
 
@@ -48,7 +49,7 @@ func (l Vline) Buffer() Buffer {
 }
 
 // Buffer draws a box border.
-func (b Block) drawBorder(buf Buffer) {
+func (b *Block) drawBorder(buf Buffer) {
 	if !b.Border {
 		return
 	}
@@ -90,7 +91,7 @@ func (b Block) drawBorder(buf Buffer) {
 	}
 }
 
-func (b Block) drawBorderLabel(buf Buffer) {
+func (b *Block) drawBorderLabel(buf Buffer) {
 	maxTxtW := b.area.Dx() - 2
 	tx := DTrimTxCls(DefaultTxBuilder.Build(b.BorderLabel, b.BorderLabelFg, b.BorderLabelBg), maxTxtW)
 
@@ -104,6 +105,7 @@ func (b Block) drawBorderLabel(buf Buffer) {
 // consider it as css: display:block.
 // Normally you do not need to create it manually.
 type Block struct {
+	sync.Mutex
 	area          image.Rectangle
 	innerArea     image.Rectangle
 	X             int
@@ -134,7 +136,7 @@ type Block struct {
 func NewBlock() *Block {
 	b := Block{}
 	b.Display = true
-	b.Border = true
+	b.Border = false
 	b.BorderLeft = true
 	b.BorderRight = true
 	b.BorderTop = true
@@ -151,12 +153,14 @@ func NewBlock() *Block {
 	return &b
 }
 
-func (b Block) Id() string {
+func (b *Block) Id() string {
 	return b.id
 }
 
 // Align computes box model
 func (b *Block) Align() {
+	b.Lock()
+	defer b.Unlock()
 	// outer
 	b.area.Min.X = 0
 	b.area.Min.Y = 0
@@ -192,12 +196,14 @@ func (b *Block) Align() {
 // InnerBounds returns the internal bounds of the block after aligning and
 // calculating the padding and border, if any.
 func (b *Block) InnerBounds() image.Rectangle {
-	b.Align()
+	b.Lock()
+	defer b.Unlock()
 	return b.innerArea
 }
 
 func (b *Block) InnerArea() image.Rectangle {
-	b.Align()
+	b.Lock()
+	defer b.Unlock()
 	return b.innerArea
 }
 
@@ -205,6 +211,9 @@ func (b *Block) InnerArea() image.Rectangle {
 // Draw background and border (if any).
 func (b *Block) Buffer() Buffer {
 	b.Align()
+
+	b.Lock()
+	defer b.Unlock()
 
 	buf := NewBuffer()
 	buf.SetArea(b.area)
@@ -218,46 +227,76 @@ func (b *Block) Buffer() Buffer {
 
 // GetHeight implements GridBufferer.
 // It returns current height of the block.
-func (b Block) GetHeight() int {
+func (b *Block) GetHeight() int {
+	b.Lock()
+	defer b.Unlock()
 	return b.Height
 }
 
 func (b *Block) SetHeight(h int) {
+	b.Lock()
+	defer b.Unlock()
 	b.Height = h
+}
+
+func (b *Block) GetX() int {
+	b.Lock()
+	defer b.Unlock()
+	return b.X
 }
 
 // SetX implements GridBufferer interface, which sets block's x position.
 func (b *Block) SetX(x int) {
+	b.Lock()
+	defer b.Unlock()
 	b.X = x
+}
+
+func (b *Block) GetY() int {
+	b.Lock()
+	defer b.Unlock()
+	return b.Y
 }
 
 // SetY implements GridBufferer interface, it sets y position for block.
 func (b *Block) SetY(y int) {
+	b.Lock()
+	defer b.Unlock()
 	b.Y = y
 }
 
-func (b Block) GetWidth() int {
+func (b *Block) GetWidth() int {
+	b.Lock()
+	defer b.Unlock()
 	return b.Width
 }
 
 // SetWidth implements GridBuffer interface, it sets block's width.
 func (b *Block) SetWidth(w int) {
+	b.Lock()
+	defer b.Unlock()
 	b.Width = w
 }
 
-func (b Block) InnerWidth() int {
+func (b *Block) InnerWidth() int {
+	b.Lock()
+	defer b.Unlock()
 	return b.innerArea.Dx()
 }
 
-func (b Block) InnerHeight() int {
+func (b *Block) InnerHeight() int {
+	b.Lock()
+	defer b.Unlock()
 	return b.innerArea.Dy()
 }
 
-func (b Block) InnerX() int {
+func (b *Block) InnerX() int {
+	b.Lock()
+	defer b.Unlock()
 	return b.innerArea.Min.X
 }
 
-func (b Block) InnerY() int { return b.innerArea.Min.Y }
+func (b *Block) InnerY() int { return b.innerArea.Min.Y }
 
 func (b *Block) AddHandler(path string, handler func(events.Event)) {
 	events.AddWgtHandler(b, path, handler)

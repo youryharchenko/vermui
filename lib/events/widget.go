@@ -19,6 +19,7 @@ type WgtInfo struct {
 }
 
 type Widget interface {
+	sync.Locker
 	Id() string
 }
 
@@ -83,7 +84,9 @@ func (wm WgtMgr) WgtHandlersHook() func(Event) {
 	return func(e Event) {
 		for _, v := range wm {
 			if k := findMatch(v.Handlers, e.Path); k != "" {
+				// v.WgtRef.Lock()
 				v.Handlers[k](e)
+				// v.WgtRef.Unlock()
 			}
 		}
 	}

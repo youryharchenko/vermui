@@ -1,0 +1,33 @@
+==================
+WARNING: DATA RACE
+Write at 0x00c4201325a0 by goroutine 46:
+  runtime.mapdelete_faststr()
+      /usr/local/go/src/runtime/hashmap_fast.go:801 +0x0
+  github.com/verdverm/vermui/lib/events.RemoveWgtHandler()
+      /home/tony/go/src/github.com/verdverm/vermui/lib/events/widget.go:60 +0x233
+  github.com/verdverm/vermui/lib/render.(*Block).RemoveHandler()
+      /home/tony/go/src/github.com/verdverm/vermui/lib/render/block.go:306 +0x58
+
+Previous read at 0x00c4201325a0 by main goroutine:
+  runtime.mapiterinit()
+      /usr/local/go/src/runtime/hashmap.go:709 +0x0
+  github.com/verdverm/vermui/lib/events.findMatch()
+      /home/tony/go/src/github.com/verdverm/vermui/lib/events/events.go:240 +0x85
+  github.com/verdverm/vermui/lib/events.WgtMgr.WgtHandlersHook.func1()
+      /home/tony/go/src/github.com/verdverm/vermui/lib/events/widget.go:86 +0x174
+  github.com/verdverm/vermui/lib/events.(*EvtStream).Loop()
+      /home/tony/go/src/github.com/verdverm/vermui/lib/events/events.go:283 +0x21c
+  github.com/verdverm/vermui/lib/events.Start()
+      /home/tony/go/src/github.com/verdverm/vermui/lib/events/run.go:22 +0x4a
+  github.com/verdverm/vermui/lib.Start()
+      /home/tony/go/src/github.com/verdverm/vermui/lib/run.go:99 +0x1be
+  github.com/verdverm/vermui.Start()
+      /home/tony/go/src/github.com/verdverm/vermui/vermui.go:35 +0x65
+  main.main()
+      /home/tony/go/src/github.com/verdverm/vermui/demo/main.go:34 +0x171
+
+Goroutine 46 (running) created at:
+  github.com/verdverm/vermui/hoc/cmdbox.(*CmdBoxWidget).Unfocus()
+      /home/tony/go/src/github.com/verdverm/vermui/hoc/cmdbox/index.go:103 +0x1a6
+==================
+Found 1 data race(s)

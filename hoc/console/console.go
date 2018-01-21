@@ -5,89 +5,92 @@ import (
 	"strings"
 	"time"
 
-	ui "github.com/verdverm/vermui"
+	"github.com/verdverm/vermui"
+	"github.com/verdverm/vermui/lib/events"
+	"github.com/verdverm/vermui/lib/render"
+	"github.com/verdverm/vermui/widgets/text"
 )
 
 type DevConsoleWidget struct {
-	Rows []*ui.Row
-
-	content  *ui.Par
+	*text.Par
 	messages []string
 }
 
 func NewDevConsoleWidget() *DevConsoleWidget {
-	content := ui.NewPar("")
-
-	content.BorderLabel = " console "
-	content.Height = 0
-	content.Border = false
-	content.BorderFg = ui.ColorGreen
-	content.BorderLabelFg = ui.ColorWhite
-	// content.TextFgColor = ui.ColorGreen
-	// content.TextBgColor = ui.ColorBlack
-
-	rows := []*ui.Row{
-		ui.NewRow(
-			ui.NewCol(12, 0, content),
-		),
-	}
-
-	return &DevConsoleWidget{
-		Rows:     rows,
-		content:  content,
+	c := &DevConsoleWidget{
+		Par:      text.NewPar(""),
 		messages: []string{},
 	}
+
+	c.BorderLabel = " console "
+	c.Height = 0
+	c.Border = false
+	c.BorderFg = render.ColorGreen
+	c.BorderLabelFg = render.ColorWhite
+
+	return c
 }
 
 func (D *DevConsoleWidget) Init() {
 
-	ui.Handle("/sys/kbd/C-l", func(ev ui.Event) {
-		if D.content.Height > 0 {
-			D.content.Height = 0
-			D.content.Border = false
+	vermui.AddGlobalHandler("/sys/kbd/C-l", func(ev events.Event) {
+		D.Lock()
+		if D.Height > 0 {
+			D.Height = 0
+			D.Border = false
 		} else {
-			D.content.Height = 24
-			D.content.Border = true
-			D.UpdateText()
+			D.Height = 24
+			D.Border = true
 		}
+		D.Unlock()
+		D.UpdateText()
+		go events.SendCustomEvent("/sys/redraw", "dev-console")
 	})
 
-	ui.Handle("/console", func(ev ui.Event) {
+	vermui.AddGlobalHandler("/console", func(ev events.Event) {
 		text := fmt.Sprintf("[%s] %v", time.Unix(ev.Time, 0).Format("2006-01-02 15:04:05"), ev.Data)
+		lines := strings.Split(text, "\n")
 
 		level := strings.TrimPrefix(ev.Path, "/console/")
-		switch level {
-		case "crit":
-			text = fmt.Sprintf("[[crit]  %s](fg-white,fg-bold,bg-red)", text)
-		case "error":
-			text = fmt.Sprintf("[[error] %s](fg-red)", text)
-		case "warn":
-			text = fmt.Sprintf("[[warn]  %s](fg-yellow)", text)
-		case "info":
-			text = fmt.Sprintf("[[info]  %s](fg-white)", text)
-		case "debug":
-			text = fmt.Sprintf("[[debug] %s](fg-green)", text)
-		case "trace":
-			text = fmt.Sprintf("[[trace] %s](fg-cyan)", text)
-		}
 
-		lines := strings.Split(text, "\n")
-		D.messages = append(D.messages, lines...)
+		D.Lock()
+		for _, line := range lines {
+			switch level {
+			case "crit":
+				line = fmt.Sprintf("[crit  %s](fg-white,fg-bold,bg-red)", line)
+			case "error":
+				line = fmt.Sprintf("[error %s](fg-red)", line)
+			case "warn":
+				line = fmt.Sprintf("[warn  %s](fg-yellow)", line)
+			case "info":
+				line = fmt.Sprintf("[info  %s](fg-white)", line)
+			case "debug":
+				line = fmt.Sprintf("[debug %s](fg-green)", line)
+			case "trace":
+				line = fmt.Sprintf("[trace %s](fg-cyan)", line)
+			}
+
+			D.messages = append(D.messages, line)
+		}
+		D.Unlock()
+
 		D.UpdateText()
 	})
 }
 
 func (D *DevConsoleWidget) UpdateText() {
-	if D.content.Height == 0 {
+	if D.Height == 0 {
 		return
 	}
+	D.Lock()
+	defer D.Unlock()
 
-	H := D.content.Height - 2
+	H := D.Height - 2
 	start := len(D.messages) - H
 
 	for i := len(D.messages) - 1; i >= 0 && i > start; i -= 1 {
 		line := D.messages[i]
-		lCnt := (len(line) / D.content.Width)
+		lCnt := (len(line) / D.Width)
 		start += lCnt
 	}
 	if start < 0 {
@@ -95,7 +98,7 @@ func (D *DevConsoleWidget) UpdateText() {
 	}
 
 	content := D.messages[start:]
-	D.content.Text = strings.Join(content, "\n")
+	D.Text = strings.Join(content, "\n")
 
-	ui.Render(D.content)
+	go vermui.Render(D)
 }

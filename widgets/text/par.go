@@ -4,7 +4,10 @@
 
 package text
 
-import "github.com/verdverm/vermui/lib/render"
+import (
+	"github.com/verdverm/vermui/lib"
+	"github.com/verdverm/vermui/lib/render"
+)
 
 // Par displays a paragraph.
 /*
@@ -23,13 +26,16 @@ type Par struct {
 
 // NewPar returns a new *Par with given text as its content.
 func NewPar(s string) *Par {
-	return &Par{
+	p := &Par{
 		Block:       *render.NewBlock(),
 		Text:        s,
 		TextFgColor: render.ThemeAttr("par.text.fg"),
 		TextBgColor: render.ThemeAttr("par.text.bg"),
 		WrapLength:  0,
 	}
+	p.Border = true
+	p.Height = 3
+	return p
 }
 
 // Buffer implements Bufferer interface.
@@ -72,4 +78,12 @@ func (p *Par) Buffer() render.Buffer {
 	}
 
 	return buf
+}
+
+func (p *Par) Mount() error {
+	lib.Render(p)
+	return nil
+}
+func (p *Par) Unmount() error {
+	return nil
 }

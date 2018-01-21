@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
-	"github.com/verdverm/vermui/layouts"
 )
 
 // Route stores information to match a request and build URLs.
@@ -95,7 +94,7 @@ func (r *Route) BuildOnly() *Route {
 
 // Handler --------------------------------------------------------------------
 
-func (R *Route) HandlerFunc(func(*Request) (layouts.Layout, error)) {
+func (R *Route) HandlerFunc(HandlerFunc) {
 
 }
 
