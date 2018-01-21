@@ -186,7 +186,7 @@ func (d *Dialog) writeText(buf *Buffer, text string, x int, y int, fgColor Attri
 
 func (d *Dialog) setActiveDialogItem(item int) {
 	// Revert all items to default color
-	for i, _ := range d.DialogItems {
+	for i := range d.DialogItems {
 		d.DialogItems[i].ItemFgColor = d.DialogFgColor
 		d.DialogItems[i].ItemBgColor = d.DialogBgColor
 	}
