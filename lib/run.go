@@ -82,14 +82,13 @@ func Start() error {
 	render.Render(rootLayout)
 
 	/*
+		// TODO this can reliably produce flicker, figure out the cause
 		go func() {
 			renderTimer = time.NewTicker(time.Millisecond * 200)
 			for range renderTimer.C {
+				rootLayout.SetWidth(render.TermWidth())
+				rootLayout.Align()
 				render.Clear()
-				if rootLayout.GetWidth() != render.TermWidth() {
-					rootLayout.SetWidth(render.TermWidth())
-					rootLayout.Align()
-				}
 				render.Render(rootLayout)
 			}
 		}()

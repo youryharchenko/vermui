@@ -3,6 +3,7 @@ package streamtable
 import (
 	"github.com/verdverm/vermui"
 	"github.com/verdverm/vermui/layouts/align"
+	"github.com/verdverm/vermui/lib/events"
 	"github.com/verdverm/vermui/lib/render"
 	"github.com/verdverm/vermui/widgets/table"
 )
@@ -58,6 +59,7 @@ func (ST *StreamTable) Show() {
 	ST.DataStreamer = ST.DataSource(ST.DataCommands)
 	ST.Table.Height = len(ST.Table.Rows) + 2
 	ST.Table.Border = true
+	first := true
 	go func() {
 		for {
 			select {
@@ -67,8 +69,13 @@ func (ST *StreamTable) Show() {
 			case <-ST.QuitChan:
 				return
 			}
+			if first {
+				events.SendCustomEvent("/sys/redraw", "stable")
+				first = false
+			}
 		}
 	}()
+	go events.SendCustomEvent("/sys/redraw", "stable")
 }
 func (ST *StreamTable) Hide() {
 	ST.DataCommands <- "quit"
@@ -76,6 +83,7 @@ func (ST *StreamTable) Hide() {
 	ST.DataStreamer = nil
 	ST.Table.Height = 0
 	ST.Table.Border = false
+	go events.SendCustomEvent("/sys/redraw", "stable")
 }
 
 func (ST *StreamTable) UpdateData(input interface{}) {
