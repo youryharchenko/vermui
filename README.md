@@ -32,7 +32,7 @@ go build
 
 ##### main.go
 
-```
+```go
 package main
 
 import (
@@ -78,7 +78,7 @@ func main() {
 
 ##### layout.go
 
-```
+```go
 package main
 
 import (
