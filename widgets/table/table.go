@@ -5,10 +5,12 @@
 package table
 
 import (
+	"fmt"
 	"strings"
 	"sync"
 
 	"github.com/verdverm/vermui/layouts/align"
+	"github.com/verdverm/vermui/lib"
 	"github.com/verdverm/vermui/lib/render"
 )
 
@@ -84,33 +86,26 @@ func (table *Table) analysis() [][]render.Cell {
 		return rowCells
 	}
 
-	if len(table.FgColors) != length {
-		table.FgColors = make([]render.Attribute, length)
-		table.CellFgColors = make([][]render.Attribute, length)
-		for y, row := range table.Rows {
-			table.CellFgColors[y] = make([]render.Attribute, len(row))
-		}
-	}
-	if len(table.BgColors) == 0 {
-		table.BgColors = make([]render.Attribute, len(table.Rows))
-		table.CellBgColors = make([][]render.Attribute, length)
-		for y, row := range table.Rows {
-			table.CellBgColors[y] = make([]render.Attribute, len(row))
-		}
-	}
-
 	cellWidths := make([]int, len(table.Rows[0]))
 
 	for y, row := range table.Rows {
-		if table.FgColors[y] == 0 {
-			table.FgColors[y] = table.FgColor
-			for x := range row {
-				table.CellFgColors[y][x] = table.FgColor
+		if len(table.FgColors) != length || len(table.BgColors) != length {
+			table.FgColors = make([]render.Attribute, length)
+			table.CellFgColors = make([][]render.Attribute, length)
+			table.BgColors = make([]render.Attribute, length)
+			table.CellBgColors = make([][]render.Attribute, length)
+			for y, row := range table.Rows {
+				table.CellFgColors[y] = make([]render.Attribute, len(row))
+				table.CellBgColors[y] = make([]render.Attribute, len(row))
 			}
 		}
-		if table.BgColors[y] == 0 {
+
+		if table.FgColors[y] == 0 || table.BgColors[y] == 0 {
+			table.FgColors[y] = table.FgColor
 			table.BgColors[y] = table.BgColor
-			for x := range row {
+			for x := 0; x < len(row); x += 1 {
+				fmt.Errorf("\n\n\n%d %d %d %d\n\n\n", y, x, length, len(row))
+				table.CellFgColors[y][x] = table.FgColor
 				table.CellBgColors[y][x] = table.BgColor
 			}
 		}
@@ -298,4 +293,13 @@ func (table *Table) SetRows(rows [][]string) {
 			table.BgColors[oldlen+i] = table.BgColor
 		}
 	}
+}
+
+func (table *Table) Mount() error {
+	table.Align()
+	lib.Render(table)
+	return nil
+}
+func (table *Table) Unmount() error {
+	return nil
 }

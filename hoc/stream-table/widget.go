@@ -83,6 +83,7 @@ func (ST *StreamTable) Hide() {
 	ST.DataStreamer = nil
 	ST.Table.Height = 0
 	ST.Table.Border = false
+	ST.Table.Rows = [][]string{}
 	go events.SendCustomEvent("/sys/redraw", "stable")
 }
 
