@@ -10,12 +10,9 @@ import (
 	"github.com/rivo/tview"
 
 	"github.com/verdverm/vermui"
-	"github.com/verdverm/vermui/hoc/console"
-	"github.com/verdverm/vermui/lib"
-	"github.com/verdverm/vermui/lib/events"
+	"github.com/verdverm/vermui/events"
 
-	"github.com/verdverm/vermui/layouts"
-	"github.com/verdverm/vermui/layouts/navbar"
+	"github.com/verdverm/vermui/hoc/console"
 )
 
 const corporate = `Leverage agile frameworks to provide a robust synopsis for high level overviews. Iterative approaches to corporate strategy foster collaborative thinking to further the overall value proposition. Organically grow the holistic world view of disruptive innovation via workplace diversity and empowerment.
@@ -26,11 +23,13 @@ Capitalize on low hanging fruit to identify a ballpark value added activity to b
 
 [yellow]Press Enter, then Tab/Backtab for word selections`
 
-func buildLayout() layouts.Layout {
+func buildLayout() tview.Primitive {
 	layout := tview.NewFlex().SetDirection(tview.FlexRow)
 
-	nav := navbar.New()
-	layout.AddItem(nav, 3, 1, false)
+	topBar := tview.NewTextView().SetDynamicColors(true).SetTextAlign(tview.AlignCenter)
+	topBar.SetTitle("  [blue]VermUI[white]  ").SetTitleAlign(tview.AlignLeft).SetBorder(true)
+	fmt.Fprint(topBar, "A React-like terminal UI framework.")
+	layout.AddItem(topBar, 3, 1, false)
 
 	ue := console.NewErrorConsoleWidget()
 	ue.Init()
@@ -53,7 +52,7 @@ func buildLayout() layouts.Layout {
 				}
 			}
 		}
-		lib.Draw()
+		vermui.Draw()
 	})
 
 	showCW := false
@@ -69,7 +68,7 @@ func buildLayout() layouts.Layout {
 				}
 			}
 		}
-		lib.Draw()
+		vermui.Draw()
 	})
 
 	home := genTextView(corporate)
@@ -87,7 +86,7 @@ func buildLayout() layouts.Layout {
 		pg := name
 		events.Handle("/sys/key/"+key, func(e events.Event) {
 			pages.SwitchToPage(pg)
-			lib.Draw()
+			vermui.Draw()
 		})
 
 		pages.AddPage(pg, page, true, false)
@@ -106,7 +105,7 @@ func genTextView(text string) tview.Primitive {
 		SetDynamicColors(true).
 		SetRegions(true).
 		SetChangedFunc(func() {
-			lib.Draw()
+			vermui.Draw()
 		})
 
 	numSelections := 0

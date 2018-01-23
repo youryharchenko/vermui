@@ -3,7 +3,7 @@ package streamtable
 import (
 	"github.com/rivo/tview"
 
-	"github.com/verdverm/vermui/lib/events"
+	"github.com/verdverm/vermui/events"
 )
 
 type StreamTableSource func(chan string) chan interface{}

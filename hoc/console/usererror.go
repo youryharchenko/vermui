@@ -7,8 +7,7 @@ import (
 	"github.com/rivo/tview"
 
 	"github.com/verdverm/vermui"
-	"github.com/verdverm/vermui/lib"
-	"github.com/verdverm/vermui/lib/events"
+	"github.com/verdverm/vermui/events"
 )
 
 type ErrorConsoleWidget struct {
@@ -19,7 +18,7 @@ func NewErrorConsoleWidget() *ErrorConsoleWidget {
 	textView := tview.NewTextView().
 		SetScrollable(true).
 		SetChangedFunc(func() {
-			lib.Draw()
+			vermui.Draw()
 		})
 
 	textView.SetTitle(" errors ").

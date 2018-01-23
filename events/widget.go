@@ -23,6 +23,22 @@ type Widget interface {
 	Id() string
 }
 
+type HandledWidget struct {
+	Widget
+}
+
+func (H HandledWidget) AddHandler(path string, handle func(Event)) {
+	AddWgtHandler(H, path, handle)
+}
+
+func (H HandledWidget) RemoveHandler(path string) {
+	RemoveWgtHandler(H, path)
+}
+
+func (H HandledWidget) ClearHandlers(path string) {
+	ClearWgtHandlers(H)
+}
+
 func NewWgtInfo(wgt Widget) WgtInfo {
 	return WgtInfo{
 		Handlers: make(map[string]func(Event)),

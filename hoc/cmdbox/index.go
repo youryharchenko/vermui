@@ -3,10 +3,11 @@ package cmdbox
 import (
 	"fmt"
 	"strings"
+	"sync"
 
 	"github.com/gdamore/tcell"
 	"github.com/rivo/tview"
-	"github.com/verdverm/vermui/lib/events"
+	"github.com/verdverm/vermui/events"
 )
 
 const emptyMsg = "press 'Ctrl-<space>' to enter a command or '/path/to/something' to navigate"
@@ -44,6 +45,9 @@ func (DC *DefaultCommand) CommandCallback(args []string, context map[string]inte
 }
 
 type CmdBoxWidget struct {
+	events.HandledWidget
+	sync.Mutex
+
 	*tview.InputField
 
 	commands map[string]Command
@@ -65,6 +69,10 @@ func New() *CmdBoxWidget {
 	return cb
 }
 
+func (CB *CmdBoxWidget) Id() string {
+	return CB.InputField.Id()
+}
+
 func (CB *CmdBoxWidget) AddCommandCallback(command string, callback func([]string, map[string]interface{})) Command {
 	c := &DefaultCommand{
 		Name:     command,
@@ -83,6 +91,10 @@ func (CB *CmdBoxWidget) AddCommand(command Command) {
 
 func (CB *CmdBoxWidget) RemoveCommand(command Command) {
 	delete(CB.commands, command.CommandName())
+}
+
+func (CB *CmdBoxWidget) Init() {
+	CB.Mount()
 }
 
 func (CB *CmdBoxWidget) Mount() error {

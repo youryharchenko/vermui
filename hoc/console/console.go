@@ -7,8 +7,7 @@ import (
 	"github.com/rivo/tview"
 
 	"github.com/verdverm/vermui"
-	"github.com/verdverm/vermui/lib"
-	"github.com/verdverm/vermui/lib/events"
+	"github.com/verdverm/vermui/events"
 )
 
 type DevConsoleWidget struct {
@@ -21,7 +20,7 @@ func NewDevConsoleWidget() *DevConsoleWidget {
 		SetDynamicColors(true).
 		SetRegions(true).
 		SetChangedFunc(func() {
-			lib.Draw()
+			vermui.Draw()
 		})
 
 	textView.SetTitle(" console ").SetBorder(true)

@@ -11,7 +11,7 @@ import (
 	"regexp"
 
 	"github.com/pkg/errors"
-	"github.com/verdverm/vermui/layouts"
+	"github.com/rivo/tview"
 )
 
 var (
@@ -89,7 +89,7 @@ func (r *Router) Match(req *Request, match *RouteMatch) bool {
 //
 // When there is a match, the route variables can be retrieved calling
 // mux.Vars(request).
-func (r *Router) Dispatch(fullpath string) (layouts.Layout, error) {
+func (r *Router) Dispatch(fullpath string) (tview.Primitive, error) {
 	u, err := url.Parse(fullpath)
 	if err != nil {
 		return nil, errors.Wrapf(err, "in Router.Dispatch(path): %q\n", fullpath)
@@ -108,7 +108,7 @@ func (r *Router) Dispatch(fullpath string) (layouts.Layout, error) {
 	return r.Serve(req)
 }
 
-func (r *Router) Serve(req *Request) (layouts.Layout, error) {
+func (r *Router) Serve(req *Request) (tview.Primitive, error) {
 	var match RouteMatch
 	var handler Handler
 	if r.Match(req, &match) {

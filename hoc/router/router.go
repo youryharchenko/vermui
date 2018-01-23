@@ -6,9 +6,8 @@ import (
 	"github.com/pkg/errors"
 	"github.com/rivo/tview"
 
-	"github.com/verdverm/vermui/layouts"
-	"github.com/verdverm/vermui/lib/events"
-	"github.com/verdverm/vermui/lib/mux"
+	"github.com/verdverm/vermui/events"
+	"github.com/verdverm/vermui/mux"
 )
 
 type RoutePair struct {
@@ -21,10 +20,12 @@ type Routable interface {
 }
 
 type Router struct {
+	events.HandledWidget
 	sync.Mutex
+
 	*tview.Pages
 	activeName   string
-	activeLayout layouts.Layout
+	activeLayout tview.Primitive
 
 	// internal router
 	iRouter *mux.Router
@@ -74,8 +75,8 @@ func (R *Router) Unmount() error {
 }
 */
 
-func (R *Router) SetNotFound(layout layouts.Layout) {
-	handler := func(*mux.Request) (layouts.Layout, error) {
+func (R *Router) SetNotFound(layout tview.Primitive) {
+	handler := func(*mux.Request) (tview.Primitive, error) {
 		return layout, nil
 	}
 	R.iRouter.NotFoundHandler = mux.NewDefaultHandler(handler)
@@ -84,7 +85,7 @@ func (R *Router) SetNotFound(layout layouts.Layout) {
 func (R *Router) AddRoute(path string, thing interface{}) error {
 
 	switch t := thing.(type) {
-	case layouts.Layout:
+	case tview.Primitive:
 		R.AddRouteLayout(path, t)
 
 	case mux.HandlerFunc:
@@ -100,8 +101,8 @@ func (R *Router) AddRoute(path string, thing interface{}) error {
 	return nil
 }
 
-func (R *Router) AddRouteLayout(path string, layout layouts.Layout) error {
-	handler := func(*mux.Request) (layouts.Layout, error) {
+func (R *Router) AddRouteLayout(path string, layout tview.Primitive) error {
+	handler := func(*mux.Request) (tview.Primitive, error) {
 		return layout, nil
 	}
 	R.iRouter.Handle(path, mux.NewDefaultHandler(handler))
@@ -130,7 +131,7 @@ func (R *Router) SetActive(path string) {
 	}
 }
 
-func (R *Router) setActive(layout layouts.Layout) {
+func (R *Router) setActive(layout tview.Primitive) {
 
 	// mount new layout
 	// layout.Mount()

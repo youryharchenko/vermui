@@ -1,11 +1,13 @@
 package mux
 
-import "github.com/verdverm/vermui/layouts"
+import (
+	"github.com/rivo/tview"
+)
 
-type HandlerFunc func(*Request) (layouts.Layout, error)
+type HandlerFunc func(*Request) (tview.Primitive, error)
 
 type Handler interface {
-	Serve(*Request) (layouts.Layout, error)
+	Serve(*Request) (tview.Primitive, error)
 }
 
 type DefaultHandler struct {
@@ -18,6 +20,6 @@ func NewDefaultHandler(handle HandlerFunc) *DefaultHandler {
 	}
 }
 
-func (H *DefaultHandler) Serve(req *Request) (layouts.Layout, error) {
+func (H *DefaultHandler) Serve(req *Request) (tview.Primitive, error) {
 	return H.handler(req)
 }

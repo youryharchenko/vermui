@@ -5,8 +5,7 @@ import (
 	"os"
 
 	"github.com/verdverm/vermui"
-
-	"github.com/verdverm/vermui/lib/events"
+	"github.com/verdverm/vermui/events"
 )
 
 func main() {
@@ -22,7 +21,7 @@ func main() {
 
 	// build our routing and layouts, give them to VermUI
 	layout := buildLayout()
-	vermui.SetLayout(layout)
+	vermui.SetRootView(layout)
 
 	// Handler: press <Ctrl>-c to quit
 	vermui.AddGlobalHandler("/sys/kbd/C-c", func(events.Event) {
