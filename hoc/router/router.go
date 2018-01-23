@@ -30,21 +30,10 @@ func New() *Router {
 		Pages:   tview.NewPages(),
 		iRouter: mux.NewRouter(),
 	}
+
 	vermui.AddWidgetHandler(r, "/router/dispatch", func(ev events.Event) {
 		path := ev.Data.(*events.EventCustom).Data().(string)
-
-		layout, err := r.iRouter.Dispatch(path)
-		if err != nil {
-			go events.SendCustomEvent("/console/error", errors.Wrap(err, "in dispatch handler"))
-		}
-
-		go events.SendCustomEvent("/console/debug", "router received path: "+path)
-		return
-		if layout != nil {
-			r.setActive(layout)
-		} else {
-			go events.SendCustomEvent("/console/error", "nil layout in dispatch handler")
-		}
+		r.SetActive(path)
 	})
 
 	return r
@@ -55,6 +44,7 @@ func (R *Router) SetNotFound(layout tview.Primitive) {
 		return layout, nil
 	}
 	R.iRouter.NotFoundHandler = mux.NewDefaultHandler(handler)
+	R.AddPage(layout.Id(), layout, true, false)
 }
 
 func (R *Router) AddRoute(path string, thing interface{}) error {
@@ -108,8 +98,5 @@ func (R *Router) SetActive(path string) {
 }
 
 func (R *Router) setActive(layout tview.Primitive) {
-	go events.SendCustomEvent("/console/error", "nil layout in dispatch handler")
-
-	R.SetActive(layout.Id())
-
+	R.Pages.SwitchToPage(layout.Id())
 }

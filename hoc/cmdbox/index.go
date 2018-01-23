@@ -60,7 +60,7 @@ func New() *CmdBoxWidget {
 		SetFieldBackgroundColor(tview.Styles.PrimitiveBackgroundColor).
 		SetLabel(" ")
 
-	cb.Mount()
+	cb.Mount(nil)
 
 	return cb
 }
@@ -89,11 +89,7 @@ func (CB *CmdBoxWidget) RemoveCommand(command Command) {
 	delete(CB.commands, command.CommandName())
 }
 
-func (CB *CmdBoxWidget) Init() {
-	CB.Mount()
-}
-
-func (CB *CmdBoxWidget) Mount() error {
+func (CB *CmdBoxWidget) Mount(context map[string]interface{}) error {
 	vermui.AddWidgetHandler(CB, "/sys/key/C-space", func(e events.Event) {
 		CB.SetText("")
 		CB.SetBorderColor(tcell.Color69)

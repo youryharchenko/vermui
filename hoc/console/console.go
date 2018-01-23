@@ -50,21 +50,27 @@ func (D *DevConsoleWidget) Init() {
 		line := fmt.Sprintf("[%s] %v", ev.When().Format("2006-01-02 15:04:05"), d)
 
 		level := strings.TrimPrefix(ev.Path, "/console/")
-		switch level {
-		case "crit":
-			line = fmt.Sprintf("[red]CRIT  %s[white]", line)
-		case "error":
-			line = fmt.Sprintf("[orange]ERROR %s[white]", line)
-		case "warn":
-			line = fmt.Sprintf("[yellow]WARN  %s[white]", line)
-		case "info":
-			line = fmt.Sprintf("INFO  %s", line)
-		case "debug":
-			line = fmt.Sprintf("[green]DEBUG  %s[white]", line)
-		case "trace":
-			line = fmt.Sprintf("[aqua]TRACE %s[white]", line)
+		if level[:4] == "colo" {
+			color := level[6:]
+			line = fmt.Sprintf("[%s]%.5s  %s[white]", color, color, line)
+		} else {
+			switch level {
+			case "crit":
+				line = fmt.Sprintf("[red]CRIT   %s[white]", line)
+			case "error":
+				line = fmt.Sprintf("[orange]ERROR  %s[white]", line)
+			case "warn":
+				line = fmt.Sprintf("[yellow]WARN   %s[white]", line)
+			case "info":
+				line = fmt.Sprintf("INFO  %s", line)
+			case "debug":
+				line = fmt.Sprintf("[green]DEBUG  %s[white]", line)
+			case "trace":
+				line = fmt.Sprintf("[aqua]TRACE  %s[white]", line)
+			}
 		}
 
 		fmt.Fprintln(D, line)
+		D.ScrollToEnd()
 	})
 }

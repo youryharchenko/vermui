@@ -2,8 +2,7 @@ package streamtable
 
 import (
 	"github.com/rivo/tview"
-
-	"github.com/verdverm/vermui/events"
+	"github.com/verdverm/vermui"
 )
 
 type StreamTableSource func(chan string) chan interface{}
@@ -35,20 +34,13 @@ func NewStreamTable(header [][]string, source StreamTableSource, formatter Strea
 	return ST
 }
 
-func (ST *StreamTable) Mount() error {
-	return nil
-}
-func (ST *StreamTable) Unmount() error {
-	return nil
-}
-
 func (ST *StreamTable) Show() {
 	// already shown
 	if ST.DataStreamer != nil {
 		return
 	}
 	ST.DataStreamer = ST.DataSource(ST.DataCommands)
-	first := true
+	// first := true
 	go func() {
 		for {
 			select {
@@ -58,19 +50,19 @@ func (ST *StreamTable) Show() {
 			case <-ST.QuitChan:
 				return
 			}
-			if first {
-				events.SendCustomEvent("/sys/redraw", "stable")
-				first = false
-			}
+			//if first {
+			//events.SendCustomEvent("/sys/redraw", "stable")
+			//first = false
+			//}
 		}
 	}()
-	go events.SendCustomEvent("/sys/redraw", "stable")
+	// go events.SendCustomEvent("/sys/redraw", "stable")
 }
 func (ST *StreamTable) Hide() {
 	ST.DataCommands <- "quit"
 	ST.QuitChan <- "quit"
 	ST.DataStreamer = nil
-	go events.SendCustomEvent("/sys/redraw", "stable")
+	// go events.SendCustomEvent("/sys/redraw", "stable")
 }
 
 func (ST *StreamTable) UpdateData(input interface{}) {
@@ -84,8 +76,10 @@ func (ST *StreamTable) UpdateData(input interface{}) {
 	for r := range rows {
 		for c := range rows[r] {
 			ST.Table.SetCell(r, c,
-				tview.NewTableCell(rows[c][r]).
+				tview.NewTableCell(rows[r][c]).
 					SetAlign(tview.AlignCenter))
 		}
 	}
+
+	vermui.Draw()
 }
