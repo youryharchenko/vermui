@@ -101,8 +101,21 @@ func SetRootView(v tview.Primitive) {
 	rootView = v
 }
 
+func GetFocus() (p tview.Primitive) {
+	return app.GetFocus()
+}
+
 func SetFocus(p tview.Primitive) {
 	app.SetFocus(p)
+	app.Draw()
+}
+func Unfocus() {
+	cur := app.GetFocus()
+	cur.Blur()
+	app.Screen().HideCursor()
+
+	app.SetFocus(rootView)
+	app.Draw()
 }
 
 func AddGlobalHandler(path string, handler func(events.Event)) {

@@ -56,12 +56,11 @@ func New() *CmdBoxWidget {
 		commands:   make(map[string]Command),
 	}
 
-	cb.
-		SetTitle("  Edsger  ").
-		SetTitleAlign(tview.AlignLeft).
-		SetTitleColor(tcell.ColorRed).
-		SetBorder(true).
-		SetBorderColor(tcell.ColorBlue)
+	cb.InputField.
+		SetFieldBackgroundColor(tview.Styles.PrimitiveBackgroundColor).
+		SetLabel(" ")
+
+	cb.Mount()
 
 	return cb
 }
@@ -95,25 +94,26 @@ func (CB *CmdBoxWidget) Init() {
 }
 
 func (CB *CmdBoxWidget) Mount() error {
-	vermui.AddWidgetHandler(CB, "/sys/kbd/C-<space>", func(e events.Event) {
-		// CB.Focus()
-	})
-	vermui.AddWidgetHandler(CB, "/sys/kbd/C-space", func(e events.Event) {
-		// CB.Focus()
+	vermui.AddWidgetHandler(CB, "/sys/key/C-space", func(e events.Event) {
+		CB.SetText("")
+		CB.SetBorderColor(tcell.Color69)
+
+		vermui.SetFocus(CB)
 	})
 
 	vermui.AddWidgetHandler(CB, "/user/error", func(e events.Event) {
-		str := fmt.Sprintf("[Error](bg-red,fg-bold): [%v](fg-yellow)", e.Data)
-		// CB.Blur()
+		str := fmt.Sprintf("%v", e.Data.(*events.EventCustom).Data())
+		CB.SetBorderColor(tcell.ColorRed)
+		CB.SetFieldTextColor(tcell.ColorOrange)
 		CB.SetText(str)
+
+		vermui.Unfocus()
 	})
 
 	return nil
 }
 func (CB *CmdBoxWidget) Unmount() error {
-	// fmt.Println("cmdbox - bye bye!")
-	vermui.RemoveWidgetHandler(CB, "/sys/kbd/C-<space>")
-	vermui.RemoveWidgetHandler(CB, "/sys/kbd/C-space")
+	vermui.RemoveWidgetHandler(CB, "/sys/key/C-space")
 	vermui.RemoveWidgetHandler(CB, "/user/error")
 
 	return nil

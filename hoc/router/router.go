@@ -1,11 +1,10 @@
 package router
 
 import (
-	"sync"
-
 	"github.com/pkg/errors"
 	"github.com/rivo/tview"
 
+	"github.com/verdverm/vermui"
 	"github.com/verdverm/vermui/events"
 	"github.com/verdverm/vermui/mux"
 )
@@ -20,59 +19,36 @@ type Routable interface {
 }
 
 type Router struct {
-	sync.Mutex
-
 	*tview.Pages
-	activeName   string
-	activeLayout tview.Primitive
 
 	// internal router
 	iRouter *mux.Router
 }
 
 func New() *Router {
-	lv := &Router{
+	r := &Router{
 		Pages:   tview.NewPages(),
 		iRouter: mux.NewRouter(),
 	}
-	return lv
-}
+	vermui.AddWidgetHandler(r, "/router/dispatch", func(ev events.Event) {
+		path := ev.Data.(*events.EventCustom).Data().(string)
 
-/*
-func (R *Router) Mount() error {
-	R.dummy.AddHandler("/router/dispatch", func(ev events.Event) {
-		path := ev.Data.(string)
-		layout, err := R.iRouter.Dispatch(path)
+		layout, err := r.iRouter.Dispatch(path)
 		if err != nil {
 			go events.SendCustomEvent("/console/error", errors.Wrap(err, "in dispatch handler"))
 		}
+
+		go events.SendCustomEvent("/console/debug", "router received path: "+path)
+		return
 		if layout != nil {
-			R.setActive(layout)
+			r.setActive(layout)
 		} else {
 			go events.SendCustomEvent("/console/error", "nil layout in dispatch handler")
 		}
 	})
 
-	if R.activeLayout != nil {
-		return R.activeLayout.Mount()
-	}
-	return nil
+	return r
 }
-
-func (R *Router) Unmount() error {
-	R.dummy.RemoveHandler("/router/dispatch")
-
-	if R.activeLayout != nil {
-		err := R.activeLayout.Unmount()
-		if err != nil {
-			return err
-		}
-		R.activeLayout = nil
-	}
-
-	return nil
-}
-*/
 
 func (R *Router) SetNotFound(layout tview.Primitive) {
 	handler := func(*mux.Request) (tview.Primitive, error) {
@@ -101,6 +77,7 @@ func (R *Router) AddRoute(path string, thing interface{}) error {
 }
 
 func (R *Router) AddRouteLayout(path string, layout tview.Primitive) error {
+	R.AddPage(layout.Id(), layout, true, false)
 	handler := func(*mux.Request) (tview.Primitive, error) {
 		return layout, nil
 	}
@@ -131,21 +108,8 @@ func (R *Router) SetActive(path string) {
 }
 
 func (R *Router) setActive(layout tview.Primitive) {
+	go events.SendCustomEvent("/console/error", "nil layout in dispatch handler")
 
-	// mount new layout
-	// layout.Mount()
+	R.SetActive(layout.Id())
 
-	// lock R
-	R.Lock()
-	defer R.Unlock()
-
-	// unmount deactivating
-	if R.activeLayout != nil {
-		// R.activeLayout.Unmount()
-	}
-
-	// finally, set the active layout and redraw
-	R.activeLayout = layout
-
-	go events.SendCustomEvent("/sys/redraw", "router - ")
 }
