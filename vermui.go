@@ -33,9 +33,9 @@ func Init() error {
 		return err
 	}
 
-	events.Handle("/", events.DefaultHandler)
+	events.AddGlobalHandler("/", events.DefaultHandler)
 
-	events.Handle("/sys/redraw", func(e events.Event) {
+	events.AddGlobalHandler("/sys/redraw", func(e events.Event) {
 		app.Draw()
 	})
 
@@ -106,13 +106,25 @@ func SetFocus(p tview.Primitive) {
 }
 
 func AddGlobalHandler(path string, handler func(events.Event)) {
-	events.Handle(path, handler)
+	events.AddGlobalHandler(path, handler)
 }
 
 func RemoveGlobalHandler(path string) {
-	events.RemoveHandle(path)
+	events.RemoveGlobalHandler(path)
 }
 
 func ClearGlobalHandlers() {
-	events.ResetHandlers()
+	events.ClearGlobalHandlers()
+}
+
+func AddWidgetHandler(widget tview.Primitive, path string, handler func(events.Event)) {
+	events.AddWidgetHandler(widget, path, handler)
+}
+
+func RemoveWidgetHandler(widget tview.Primitive, path string) {
+	events.RemoveWidgetHandler(widget, path)
+}
+
+func ClearWidgetHandlers(widget tview.Primitive) {
+	events.ClearWidgetHandlers(widget)
 }

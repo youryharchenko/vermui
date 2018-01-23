@@ -7,6 +7,8 @@ package events
 import (
 	"fmt"
 	"sync"
+
+	"github.com/rivo/tview"
 )
 
 // event mixins
@@ -14,32 +16,11 @@ type WgtMgr map[string]WgtInfo
 
 type WgtInfo struct {
 	Handlers map[string]func(Event)
-	WgtRef   Widget
+	WgtRef   tview.Primitive
 	Id       string
 }
 
-type Widget interface {
-	sync.Locker
-	Id() string
-}
-
-type HandledWidget struct {
-	Widget
-}
-
-func (H HandledWidget) AddHandler(path string, handle func(Event)) {
-	AddWgtHandler(H, path, handle)
-}
-
-func (H HandledWidget) RemoveHandler(path string) {
-	RemoveWgtHandler(H, path)
-}
-
-func (H HandledWidget) ClearHandlers(path string) {
-	ClearWgtHandlers(H)
-}
-
-func NewWgtInfo(wgt Widget) WgtInfo {
+func NewWgtInfo(wgt tview.Primitive) WgtInfo {
 	return WgtInfo{
 		Handlers: make(map[string]func(Event)),
 		WgtRef:   wgt,
@@ -53,11 +34,11 @@ func NewWgtMgr() WgtMgr {
 
 }
 
-func (wm WgtMgr) AddWgt(wgt Widget) {
+func (wm WgtMgr) AddWgt(wgt tview.Primitive) {
 	wm[wgt.Id()] = NewWgtInfo(wgt)
 }
 
-func (wm WgtMgr) RmWgt(wgt Widget) {
+func (wm WgtMgr) RmWgt(wgt tview.Primitive) {
 	wm.RmWgtById(wgt.Id())
 }
 

@@ -20,7 +20,6 @@ type Routable interface {
 }
 
 type Router struct {
-	events.HandledWidget
 	sync.Mutex
 
 	*tview.Pages

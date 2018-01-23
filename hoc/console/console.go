@@ -33,6 +33,11 @@ func NewDevConsoleWidget() *DevConsoleWidget {
 }
 
 func (D *DevConsoleWidget) Init() {
+	// capture all key strokes and print
+	vermui.AddGlobalHandler("/console/key", func(ev events.Event) {
+		str := ev.Data.(*events.EventCustom).Data()
+		fmt.Fprintf(D, "[fuchsia]key %s[white]\n", str)
+	})
 
 	vermui.AddGlobalHandler("/console", func(ev events.Event) {
 		d := ev.Data

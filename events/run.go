@@ -36,19 +36,19 @@ func Merge(name string, ec chan Event) {
 	defaultEventStream.Merge(name, ec)
 }
 
-func Handle(path string, handler func(Event)) {
+func AddGlobalHandler(path string, handler func(Event)) {
 	defaultEventStream.Handle(path, handler)
 }
 
-func RemoveHandle(path string) {
+func RemoveGlobalHandler(path string) {
 	defaultEventStream.RemoveHandle(path)
 }
 
-func ResetHandlers() {
+func ClearGlobalHandlers() {
 	defaultEventStream.ResetHandlers()
 }
 
-func AddWgtHandler(wgt Widget, path string, handler func(Event)) {
+func AddWidgetHandler(wgt tview.Primitive, path string, handler func(Event)) {
 	if _, ok := defaultWgtMgr[wgt.Id()]; !ok {
 		defaultWgtMgr.AddWgt(wgt)
 	}
@@ -56,7 +56,7 @@ func AddWgtHandler(wgt Widget, path string, handler func(Event)) {
 	defaultWgtMgr.AddWgtHandler(wgt.Id(), path, handler)
 }
 
-func RemoveWgtHandler(wgt Widget, path string) {
+func RemoveWidgetHandler(wgt tview.Primitive, path string) {
 	_, ok := defaultWgtMgr[wgt.Id()]
 	if !ok {
 		return
@@ -65,7 +65,7 @@ func RemoveWgtHandler(wgt Widget, path string) {
 	defaultWgtMgr.RmWgtHandler(wgt.Id(), path)
 }
 
-func ClearWgtHandlers(wgt Widget) {
+func ClearWidgetHandlers(wgt tview.Primitive) {
 	_, ok := defaultWgtMgr[wgt.Id()]
 	if !ok {
 		return
