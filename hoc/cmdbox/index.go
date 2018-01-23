@@ -4,13 +4,12 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/gdamore/tcell"
+	"github.com/rivo/tview"
 	"github.com/verdverm/vermui/lib/events"
-	"github.com/verdverm/vermui/lib/render"
-	"github.com/verdverm/vermui/widgets/text"
 )
 
 const emptyMsg = "press 'Ctrl-<space>' to enter a command or '/path/to/something' to navigate"
-const inputRune = "█"
 
 type Command interface {
 	CommandName() string
@@ -45,20 +44,23 @@ func (DC *DefaultCommand) CommandCallback(args []string, context map[string]inte
 }
 
 type CmdBoxWidget struct {
-	*text.Par
+	*tview.InputField
 
 	commands map[string]Command
 }
 
 func New() *CmdBoxWidget {
 	cb := &CmdBoxWidget{
-		Par:      text.NewPar(emptyMsg),
-		commands: make(map[string]Command),
+		InputField: tview.NewInputField(),
+		commands:   make(map[string]Command),
 	}
-	cb.Height = 3
-	cb.PaddingLeft = 1
-	cb.BorderFg = render.ColorBlue
-	cb.BorderLabelFg = render.StringToAttribute("red,bold")
+
+	cb.
+		SetTitle("  Edsger  ").
+		SetTitleAlign(tview.AlignLeft).
+		SetTitleColor(tcell.ColorRed).
+		SetBorder(true).
+		SetBorderColor(tcell.ColorBlue)
 
 	return cb
 }
@@ -84,19 +86,17 @@ func (CB *CmdBoxWidget) RemoveCommand(command Command) {
 }
 
 func (CB *CmdBoxWidget) Mount() error {
-	// fmt.Println("cmdbox Mount")
 	CB.AddHandler("/sys/kbd/C-<space>", func(e events.Event) {
-		// fmt.Println("cmdbox - look at me!")
-		// go events.SendCustomEvent("/console/trace", fmt.Sprint("cmdbox - look at me!", e.Path))
-		CB.Focus()
+		// CB.Focus()
+	})
+	CB.AddHandler("/sys/kbd/C-space", func(e events.Event) {
+		// CB.Focus()
 	})
 
 	CB.AddHandler("/user/error", func(e events.Event) {
-		CB.Lock()
-		CB.Text = fmt.Sprintf("[Error](bg-red,fg-bold): [%v](fg-yellow)", e.Data)
-		CB.Unlock()
-
-		render.Render(CB)
+		str := fmt.Sprintf("[Error](bg-red,fg-bold): [%v](fg-yellow)", e.Data)
+		CB.Blur()
+		CB.SetText(str)
 	})
 
 	return nil
@@ -104,11 +104,13 @@ func (CB *CmdBoxWidget) Mount() error {
 func (CB *CmdBoxWidget) Unmount() error {
 	// fmt.Println("cmdbox - bye bye!")
 	CB.RemoveHandler("/sys/kbd/C-<space>")
+	CB.RemoveHandler("/sys/kbd/C-space")
 	CB.RemoveHandler("/user/error")
 
 	return nil
 }
 
+/*
 func (CB *CmdBoxWidget) Focus() error {
 	CB.Lock()
 	CB.BorderFg = render.ColorRed
@@ -198,6 +200,7 @@ func (CB *CmdBoxWidget) handleKey(key string) {
 
 	render.Render(CB)
 }
+*/
 
 func (CB *CmdBoxWidget) Submit(command string, args []string) {
 	if len(command) == 0 {

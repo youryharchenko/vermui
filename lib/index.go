@@ -6,44 +6,38 @@ import (
 	"io"
 	"os"
 	"runtime/debug"
-	"time"
 
 	"github.com/maruel/panicparse/stack"
+	"github.com/rivo/tview"
+
 	"github.com/verdverm/vermui/layouts"
 	"github.com/verdverm/vermui/lib/events"
-	"github.com/verdverm/vermui/lib/render"
 )
 
+var app *tview.Application
 var rootLayout layouts.Layout
-var renderTimer *time.Ticker
 
 // Init initializes vermui library. This function should be called before any others.
 // After initialization, the library must be finalized by 'Close' function.
 func Init() error {
-	err := render.Init()
-	if err != nil {
-		return err
-	}
+	/*
+		err := render.Init()
+		if err != nil {
+			return err
+		}
+	*/
 
-	err = events.Init()
+	app = tview.NewApplication()
+
+	err := events.Init(app)
 	if err != nil {
 		return err
 	}
 
 	events.Handle("/", events.DefaultHandler)
-	events.Handle("/sys/wnd/resize", func(e events.Event) {
-		w := e.Data.(events.EvtWnd)
-		rootLayout.SetWidth(w.Width)
-		rootLayout.Align()
-		render.Clear()
-		render.Render(rootLayout)
-	})
 
 	events.Handle("/sys/redraw", func(e events.Event) {
-		rootLayout.SetWidth(render.TermWidth())
-		rootLayout.Align()
-		render.Clear()
-		render.Render(rootLayout)
+		app.Draw()
 	})
 
 	return nil
@@ -74,41 +68,30 @@ func Start() error {
 		}
 	}()
 
-	rootLayout.SetWidth(render.TermWidth())
-	rootLayout.Mount()
-	rootLayout.Align()
-	render.Clear()
-	render.Start()
-	render.Render(rootLayout)
+	app.SetFocus(rootLayout)
+	app.SetRoot(rootLayout, true)
 
-	/*
-		// TODO this can reliably produce flicker, figure out the cause
-		go func() {
-			renderTimer = time.NewTicker(time.Millisecond * 200)
-			for range renderTimer.C {
-				rootLayout.SetWidth(render.TermWidth())
-				rootLayout.Align()
-				render.Clear()
-				render.Render(rootLayout)
-			}
-		}()
-	*/
+	go events.Start()
+	go events.SendCustomEvent("/console/debug", "App Starting")
 
 	// blocking
-	return events.Start()
+	return app.Run()
 }
 
 // Close finalizes vermui library,
 // should be called after successful initialization when vermui's functionality isn't required anymore.
 func Stop() error {
-	if renderTimer != nil {
-		renderTimer.Stop()
-
-	}
-	render.Stop()
-	render.Clear()
+	app.Stop()
 	err := events.Stop()
 	return err
+}
+
+func Draw() {
+	app.Draw()
+}
+
+func Application() *tview.Application {
+	return app
 }
 
 func GetRootLayout() layouts.Layout {
@@ -117,6 +100,10 @@ func GetRootLayout() layouts.Layout {
 
 func SetRootLayout(l layouts.Layout) {
 	rootLayout = l
+}
+
+func SetFocus(p tview.Primitive) {
+	app.SetFocus(p)
 }
 
 func AddGlobalHandler(path string, handler func(events.Event)) {
@@ -129,8 +116,4 @@ func RemoveGlobalHandler(path string) {
 
 func ClearGlobalHandlers() {
 	events.ResetHandlers()
-}
-
-func Render(bs ...render.Bufferer) {
-	render.Render(bs...)
 }

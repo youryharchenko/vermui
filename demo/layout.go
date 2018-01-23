@@ -1,118 +1,161 @@
 package main
 
 import (
-	"github.com/verdverm/vermui/hoc/cmdbox"
-	"github.com/verdverm/vermui/layouts"
-	"github.com/verdverm/vermui/layouts/grid"
-	"github.com/verdverm/vermui/layouts/navbar"
-	"github.com/verdverm/vermui/layouts/router"
+	"fmt"
+	"strconv"
+	"strings"
+	"time"
+
+	"github.com/gdamore/tcell"
+	"github.com/rivo/tview"
+
+	"github.com/verdverm/vermui"
+	"github.com/verdverm/vermui/hoc/console"
+	"github.com/verdverm/vermui/lib"
 	"github.com/verdverm/vermui/lib/events"
-	"github.com/verdverm/vermui/lib/mux"
-	"github.com/verdverm/vermui/lib/render"
-	"github.com/verdverm/vermui/widgets/text"
+
+	"github.com/verdverm/vermui/layouts"
+	"github.com/verdverm/vermui/layouts/navbar"
 )
 
+const corporate = `Leverage agile frameworks to provide a robust synopsis for high level overviews. Iterative approaches to corporate strategy foster collaborative thinking to further the overall value proposition. Organically grow the holistic world view of disruptive innovation via workplace diversity and empowerment.
+
+Bring to the table win-win survival strategies to ensure proactive domination. At the end of the day, going forward, a new normal that has evolved from generation X is on the runway heading towards a streamlined cloud solution. User generated content in real-time will have multiple touchpoints for offshoring.
+
+Capitalize on low hanging fruit to identify a ballpark value added activity to beta test. Override the digital divide with additional clickthroughs from DevOps. Nanotechnology immersion along the information highway will close the loop on focusing solely on the bottom line.
+
+[yellow]Press Enter, then Tab/Backtab for word selections`
+
 func buildLayout() layouts.Layout {
-	// create out NotFound view
-	n := text.NewPar(":PRESS Ctrl-c to quit demo")
-	n.Height = 3
-	n.TextFgColor = render.ColorWhite
-	n.BorderLabel = " VermUI - Not Found "
-	n.BorderFg = render.ColorCyan
+	layout := tview.NewFlex().SetDirection(tview.FlexRow)
 
-	// Wrap the views in grids
-	layoutN := grid.NewGrid()
-	layoutN.AddRows(
-		grid.NewRow(
-			grid.NewCol(6, 3, n),
-		),
-	)
-
-	// the Home View
-	h := text.NewPar(":PRESS Ctrl-c to quit demo")
-	h.Height = 3
-	h.TextFgColor = render.ColorWhite
-	h.BorderLabel = " VermUI - Home "
-	h.BorderFg = render.ColorCyan
-
-	layoutH := grid.NewGrid()
-	layoutH.AddRows(
-		grid.NewRow(
-			grid.NewCol(6, 3, h),
-		),
-	)
-
-	// the Echo View
-	q := text.NewPar(":PRESS Ctrl-c to quit demo")
-	q.Height = 3
-	q.TextFgColor = render.ColorWhite
-	q.BorderLabel = " VermUI - Echo "
-	q.BorderFg = render.ColorCyan
-
-	layoutQ := grid.NewGrid()
-	layoutQ.AddRows(
-		grid.NewRow(
-			grid.NewCol(6, 3, q),
-		),
-	)
-
-	// The layouts we just made are our main views
-	// They will be added to the router below
-
-	// Lets create some other goodies
-	// and the main layout next
-
-	// Setup a Command Box
-	cbox := cmdbox.New()
-	cbox.BorderLabel = " VermUI "
-	cboxRow := grid.NewRow(
-		grid.NewCol(12, 0, cbox),
-	)
-
-	// NavBar has the Console and UserError HOCs
 	nav := navbar.New()
+	layout.AddItem(nav, 3, 1, false)
 
-	// The navbar is actually hidden
-	// C-l and C-e to see the console/user-error
-	hiddenRow := grid.NewRow(
-		grid.NewCol(12, 0, nav),
-	)
+	ue := console.NewErrorConsoleWidget()
+	ue.Init()
+	ueRow := tview.NewFlex().AddItem(ue, 0, 1, false)
 
-	// Now to tie everything together
+	cw := console.NewDevConsoleWidget()
+	cw.Init()
+	cwRow := tview.NewFlex().AddItem(cw, 0, 1, false)
 
-	// First,
-	//   Create a new Router View
-	//   This uses an internal router based on gorilla/mux
-	rtr := router.New()
-
-	// Set a NotFound View (aka 404 w/o the internet)
-	rtr.SetNotFound(layoutN)
-
-	// Add a layout directly
-	rtr.AddRouteLayout("/home", layoutH)
-
-	// Add a route with a Handler function
-	rtr.AddRouteHandlerFunc("/echo/{what}", func(req *mux.Request) (layouts.Layout, error) {
-		vars := mux.Vars(req)
-		q.BorderLabel = " VermUI - Echo - '" + vars["what"] + "' "
-		return layoutQ, nil
-	})
-	// There is also a Handler type for more complex requirements
-
-	// Add a command to the commandbox
-	cbox.AddCommandCallback("echo", func(args []string, context map[string]interface{}) {
-		go events.SendCustomEvent("/router/dispatch", "/echo/"+args[0])
+	showUE := false
+	vermui.AddGlobalHandler("/sys/key/C-e", func(ev events.Event) {
+		showUE = !showUE
+		if showUE {
+			layout.InsItem(1, ueRow, 0, 5, false)
+		} else {
+			for idx, item := range layout.GetItems() {
+				if item.Item == ueRow {
+					layout.DelItem(idx)
+					break
+				}
+			}
+		}
+		lib.Draw()
 	})
 
-	// Then,
-	//   Grid to use the router view as our main view
-	mainRow := grid.NewRow(
-		grid.NewCol(12, 0, rtr),
-	)
+	showCW := false
+	vermui.AddGlobalHandler("/sys/key/C-l", func(ev events.Event) {
+		showCW = !showCW
+		if showCW {
+			layout.InsItem(1, cwRow, 0, 5, false)
+		} else {
+			for idx, item := range layout.GetItems() {
+				if item.Item == cwRow {
+					layout.DelItem(idx)
+					break
+				}
+			}
+		}
+		lib.Draw()
+	})
 
-	// Finally,
-	//   we will use a grid as our top-most layout
-	g := grid.NewGrid()
-	g.AddRows(cboxRow, hiddenRow, mainRow)
-	return g
+	home := genTextView(corporate)
+	help := tview.NewTextView()
+	fmt.Fprint(help, "help, i need some help!")
+
+	items := map[string]tview.Primitive{
+		"home": home,
+		"Help": help,
+	}
+
+	pages := tview.NewPages()
+	for name, page := range items {
+		key := name[:1]
+		pg := name
+		events.Handle("/sys/key/"+key, func(e events.Event) {
+			pages.SwitchToPage(pg)
+			lib.Draw()
+		})
+
+		pages.AddPage(pg, page, true, false)
+	}
+	pagesRow := tview.NewFlex().AddItem(pages, 0, 1, true)
+	pages.SwitchToPage("home")
+
+	layout.AddItem(pagesRow, 0, 5, true)
+
+	return layout
+}
+
+func genTextView(text string) tview.Primitive {
+
+	textView := tview.NewTextView().
+		SetDynamicColors(true).
+		SetRegions(true).
+		SetChangedFunc(func() {
+			lib.Draw()
+		})
+
+	numSelections := 0
+	go func() {
+		for _, word := range strings.Split(text, " ") {
+			if word == "the" {
+				word = "[red]the[white]"
+
+			}
+			if word == "to" {
+				word = fmt.Sprintf(`["%d"]to[""]`, numSelections)
+				numSelections++
+
+			}
+			fmt.Fprintf(textView, "%s ", word)
+			time.Sleep(200 * time.Millisecond)
+
+		}
+
+	}()
+	textView.SetDoneFunc(func(key tcell.Key) {
+		currentSelection := textView.GetHighlights()
+		if key == tcell.KeyEnter {
+			if len(currentSelection) > 0 {
+				textView.Highlight()
+
+			} else {
+				textView.Highlight("0").ScrollToHighlight()
+
+			}
+
+		} else if len(currentSelection) > 0 {
+			index, _ := strconv.Atoi(currentSelection[0])
+			if key == tcell.KeyTab {
+				index = (index + 1) % numSelections
+
+			} else if key == tcell.KeyBacktab {
+				index = (index - 1 + numSelections) % numSelections
+
+			} else {
+				return
+
+			}
+			textView.Highlight(strconv.Itoa(index)).ScrollToHighlight()
+
+		}
+
+	})
+	textView.SetBorder(true)
+
+	return textView
 }

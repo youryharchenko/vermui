@@ -1,30 +1,10 @@
 package layouts
 
-import "github.com/verdverm/vermui/lib/render"
+import "github.com/rivo/tview"
 
 type Layout interface {
-	render.Bufferer
+	tview.Primitive
 
-	GetHeight() int
-	SetHeight(int)
-
-	GetWidth() int
-	SetWidth(int)
-
-	GetX() int
-	SetX(int)
-
-	GetY() int
-	SetY(int)
-
-	Align()
-
-	Mount() error
-	Unmount() error
-
-	Show()
-	Hide()
-
-	Focus()
-	Unfocus()
+	// Mount() error
+	// Unmount() error
 }

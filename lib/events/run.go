@@ -1,16 +1,20 @@
 package events
 
-var defaultEventStream *EvtStream
+import (
+	"github.com/rivo/tview"
+)
+
+var defaultEventStream *EventStream
 var defaultWgtMgr WgtMgr
 
-func Init() error {
+func Init(app *tview.Application) error {
 	sysEvtChs = make([]chan Event, 0)
-	go hookTermboxEvt()
+	go hookEventsFromApp(app)
 
 	defaultEventStream = NewEventStream()
 	defaultEventStream.Init()
-	defaultEventStream.Merge("termbox", NewSysEvtCh())
-	defaultEventStream.Merge("custom", usrEvtCh)
+	defaultEventStream.Merge("tcell", NewSysEvtCh())
+	defaultEventStream.Merge("custom", customEventCh)
 
 	defaultWgtMgr = NewWgtMgr()
 	defaultEventStream.Hook(defaultWgtMgr.WgtHandlersHook())

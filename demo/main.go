@@ -35,7 +35,7 @@ func main() {
 	})
 
 	// go to the initial route/view
-	go events.SendCustomEvent("/router/dispatch", "/home")
+	// go events.SendCustomEvent("/router/dispatch", "/page-1")
 
 	// block until Stop is called
 	vermui.Start()

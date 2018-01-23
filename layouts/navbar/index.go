@@ -1,40 +1,79 @@
 package navbar
 
 import (
+	"github.com/rivo/tview"
+	"github.com/verdverm/vermui"
 	"github.com/verdverm/vermui/hoc/console"
-	"github.com/verdverm/vermui/layouts/grid"
+	"github.com/verdverm/vermui/lib"
+	"github.com/verdverm/vermui/lib/events"
 )
 
 type NavBar struct {
-	*grid.Grid
+	*tview.Flex
+
+	box *tview.Box
+
 	console *console.DevConsoleWidget
 	usererr *console.ErrorConsoleWidget
 }
 
 func New() *NavBar {
-	rows := []*grid.Row{}
+	box := tview.NewBox().SetBorder(true).SetTitleAlign(tview.AlignLeft).SetTitle(" VermUI ")
+	rhs := tview.NewBox().SetBorder(true).SetTitleAlign(tview.AlignLeft).SetTitle(" Home ")
+
+	topRow := tview.NewFlex()
+	topRow.AddItem(box, 0, 1, false)
+	topRow.AddItem(rhs, 0, 1, false)
 
 	ue := console.NewErrorConsoleWidget()
 	ue.Init()
-	ueRow := grid.NewRow(
-		grid.NewCol(12, 0, ue),
-	)
-	rows = append(rows, ueRow)
+	ueRow := tview.NewFlex().AddItem(ue, 0, 1, false)
 
 	cw := console.NewDevConsoleWidget()
 	cw.Init()
-	cwRow := grid.NewRow(
-		grid.NewCol(12, 0, cw),
-	)
-	rows = append(rows, cwRow)
+	cwRow := tview.NewFlex().AddItem(cw, 0, 1, false)
 
-	g := grid.NewGrid(rows...)
+	f := tview.NewFlex().SetDirection(tview.FlexRow)
+	f.AddItem(topRow, 3, 1, false)
 
 	nb := &NavBar{
-		Grid: g,
-		// console: cw,
+		Flex: f,
+
+		console: cw,
 		usererr: ue,
 	}
+
+	showUE := false
+	vermui.AddGlobalHandler("/sys/key/C-e", func(ev events.Event) {
+		showUE = !showUE
+		if showUE {
+			f.AddItem(ueRow, 0, 5, false)
+		} else {
+			for idx, item := range f.GetItems() {
+				if item.Item == ueRow {
+					f.DelItem(idx)
+					break
+				}
+			}
+		}
+		lib.Draw()
+	})
+
+	showCW := false
+	vermui.AddGlobalHandler("/sys/key/C-l", func(ev events.Event) {
+		showCW = !showCW
+		if showCW {
+			f.AddItem(cwRow, 0, 5, false)
+		} else {
+			for idx, item := range f.GetItems() {
+				if item.Item == cwRow {
+					f.DelItem(idx)
+					break
+				}
+			}
+		}
+		lib.Draw()
+	})
 
 	return nb
 }

@@ -5,12 +5,12 @@ import (
 	"os"
 
 	"github.com/pkg/errors"
+	"github.com/rivo/tview"
 
 	"github.com/verdverm/vermui/layouts"
 
 	"github.com/verdverm/vermui/lib"
 	"github.com/verdverm/vermui/lib/events"
-	"github.com/verdverm/vermui/lib/render"
 )
 
 func Init() error {
@@ -27,7 +27,6 @@ func Start() error {
 		err := recover()
 		if err != nil {
 			lib.Stop()
-			render.Clear()
 			fmt.Println("ERROR:", err)
 			os.Exit(1)
 		}
@@ -67,6 +66,10 @@ func ClearGlobalHandlers() {
 	lib.ClearGlobalHandlers()
 }
 
-func Render(bs ...render.Bufferer) {
-	lib.Render(bs...)
+func Application() *tview.Application {
+	return lib.Application()
+}
+
+func Draw() {
+	lib.Draw()
 }

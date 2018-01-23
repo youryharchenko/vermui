@@ -1,18 +1,16 @@
 package streamtable
 
 import (
-	"github.com/verdverm/vermui"
-	"github.com/verdverm/vermui/layouts/align"
+	"github.com/rivo/tview"
+
 	"github.com/verdverm/vermui/lib/events"
-	"github.com/verdverm/vermui/lib/render"
-	"github.com/verdverm/vermui/widgets/table"
 )
 
 type StreamTableSource func(chan string) chan interface{}
 type StreamTableFormatter func(interface{}) [][]string
 
 type StreamTable struct {
-	*table.Table
+	*tview.Table
 
 	TableHeader   [][]string
 	DataSource    StreamTableSource
@@ -25,18 +23,11 @@ type StreamTable struct {
 
 func NewStreamTable(header [][]string, source StreamTableSource, formatter StreamTableFormatter) *StreamTable {
 	ST := &StreamTable{
-		Table:         table.NewTable(),
+		Table:         tview.NewTable(),
 		TableHeader:   header,
 		DataSource:    source,
 		DataFormatter: formatter,
 	}
-
-	ST.Table.FgColor = render.ColorWhite
-	ST.Table.BgColor = render.ColorDefault
-	ST.Table.TextAlign = align.AlignCenter
-	ST.Table.Separator = false
-	ST.Table.Border = false
-	ST.Table.Height = 0
 
 	ST.QuitChan = make(chan string, 2)
 	ST.DataCommands = make(chan string, 2)
@@ -57,8 +48,6 @@ func (ST *StreamTable) Show() {
 		return
 	}
 	ST.DataStreamer = ST.DataSource(ST.DataCommands)
-	ST.Table.Height = len(ST.Table.Rows) + 2
-	ST.Table.Border = true
 	first := true
 	go func() {
 		for {
@@ -81,9 +70,6 @@ func (ST *StreamTable) Hide() {
 	ST.DataCommands <- "quit"
 	ST.QuitChan <- "quit"
 	ST.DataStreamer = nil
-	ST.Table.Height = 0
-	ST.Table.Border = false
-	ST.Table.Rows = [][]string{}
 	go events.SendCustomEvent("/sys/redraw", "stable")
 }
 
@@ -95,16 +81,11 @@ func (ST *StreamTable) UpdateData(input interface{}) {
 	rows = append(rows, ST.TableHeader...)
 	rows = append(rows, data...)
 
-	oldRows := ST.Table.Rows
-	ST.Table.Rows = rows
-	if len(oldRows) != len(rows) {
-		ST.Table.Height = len(ST.Table.Rows) + 2
-		if ST.Table.Height > 20 {
-			ST.Table.Height = 20
+	for r := range rows {
+		for c := range rows[r] {
+			ST.Table.SetCell(r, c,
+				tview.NewTableCell(rows[c][r]).
+					SetAlign(tview.AlignCenter))
 		}
-		ST.Table.Analysis()
-		ST.Table.SetSize()
 	}
-	vermui.Render(ST)
-
 }
