@@ -33,15 +33,21 @@ func New() *Router {
 
 	vermui.AddWidgetHandler(r, "/router/dispatch", func(ev events.Event) {
 		path := ev.Data.(*events.EventCustom).Data().(string)
-		r.SetActive(path)
+		context := map[string]interface{}{
+			"activation": "dispatch",
+			"path":       path,
+			"data":       ev.Data.(*events.EventCustom).Data(),
+			"event":      ev,
+		}
+		r.SetActive(path, context)
 	})
 
 	return r
 }
 
 func (R *Router) SetNotFound(layout tview.Primitive) {
-	handler := func(*mux.Request) (tview.Primitive, error) {
-		return layout, nil
+	handler := func(req *mux.Request) (tview.Primitive, *mux.Request, error) {
+		return layout, req, nil
 	}
 	R.iRouter.NotFoundHandler = mux.NewDefaultHandler(handler)
 	R.AddPage(layout.Id(), layout, true, false)
@@ -68,8 +74,8 @@ func (R *Router) AddRoute(path string, thing interface{}) error {
 
 func (R *Router) AddRouteLayout(path string, layout tview.Primitive) error {
 	R.AddPage(layout.Id(), layout, true, false)
-	handler := func(*mux.Request) (tview.Primitive, error) {
-		return layout, nil
+	handler := func(req *mux.Request) (tview.Primitive, *mux.Request, error) {
+		return layout, req, nil
 	}
 	R.iRouter.Handle(path, mux.NewDefaultHandler(handler))
 	return nil
@@ -85,18 +91,21 @@ func (R *Router) AddRouteHandler(path string, handler mux.Handler) error {
 	return nil
 }
 
-func (R *Router) SetActive(path string) {
-	layout, err := R.iRouter.Dispatch(path)
+func (R *Router) SetActive(path string, context map[string]interface{}) {
+	layout, req, err := R.iRouter.Dispatch(path, context)
 	if err != nil {
 		go events.SendCustomEvent("/console/error", errors.Wrap(err, "in dispatch handler"))
 	}
 	if layout != nil {
-		R.setActive(layout)
+		ctx := req.Context
+		req.Context = nil
+		ctx["req"] = req
+		R.setActive(layout, ctx)
 	} else {
 		go events.SendCustomEvent("/console/error", "nil layout in dispatch handler")
 	}
 }
 
-func (R *Router) setActive(layout tview.Primitive) {
-	R.Pages.SwitchToPage(layout.Id())
+func (R *Router) setActive(layout tview.Primitive, context map[string]interface{}) {
+	R.Pages.SwitchToPage(layout.Id(), context)
 }

@@ -19,13 +19,6 @@ var rootView tview.Primitive
 // Init initializes vermui library. This function should be called before any others.
 // After initialization, the library must be finalized by 'Close' function.
 func Init() error {
-	/*
-		err := render.Init()
-		if err != nil {
-			return err
-		}
-	*/
-
 	app = tview.NewApplication()
 
 	err := events.Init(app)
@@ -80,9 +73,8 @@ func Start() error {
 // Close finalizes vermui library,
 // should be called after successful initialization when vermui's functionality isn't required anymore.
 func Stop() error {
-	app.Stop()
-	err := events.Stop()
-	return err
+	// err := events.Stop()
+	return app.Stop()
 }
 
 func Application() *tview.Application {
@@ -91,6 +83,10 @@ func Application() *tview.Application {
 
 func Draw() {
 	app.Draw()
+}
+
+func Clear() {
+	app.Screen().Clear()
 }
 
 func GetRootView() tview.Primitive {

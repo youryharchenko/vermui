@@ -89,15 +89,18 @@ func (r *Router) Match(req *Request, match *RouteMatch) bool {
 //
 // When there is a match, the route variables can be retrieved calling
 // mux.Vars(request).
-func (r *Router) Dispatch(fullpath string) (tview.Primitive, error) {
+func (r *Router) Dispatch(fullpath string, context map[string]interface{}) (tview.Primitive, *Request, error) {
 	u, err := url.Parse(fullpath)
 	if err != nil {
-		return nil, errors.Wrapf(err, "in Router.Dispatch(path): %q\n", fullpath)
+		return nil, nil, errors.Wrapf(err, "in Router.Dispatch(path): %q\n", fullpath)
+	}
+	if context == nil {
+		context = make(map[string]interface{})
 	}
 	req := &Request{
 		Path:    u.Path,
 		Queries: u.Query(),
-		Context: make(map[string]interface{}),
+		Context: context,
 	}
 
 	// Clean path to canonical form and redirect.
@@ -108,7 +111,7 @@ func (r *Router) Dispatch(fullpath string) (tview.Primitive, error) {
 	return r.Serve(req)
 }
 
-func (r *Router) Serve(req *Request) (tview.Primitive, error) {
+func (r *Router) Serve(req *Request) (tview.Primitive, *Request, error) {
 	var match RouteMatch
 	var handler Handler
 	if r.Match(req, &match) {

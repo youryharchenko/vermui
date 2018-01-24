@@ -4,10 +4,10 @@ import (
 	"github.com/rivo/tview"
 )
 
-type HandlerFunc func(*Request) (tview.Primitive, error)
+type HandlerFunc func(*Request) (tview.Primitive, *Request, error)
 
 type Handler interface {
-	Serve(*Request) (tview.Primitive, error)
+	Serve(*Request) (tview.Primitive, *Request, error)
 }
 
 type DefaultHandler struct {
@@ -20,6 +20,6 @@ func NewDefaultHandler(handle HandlerFunc) *DefaultHandler {
 	}
 }
 
-func (H *DefaultHandler) Serve(req *Request) (tview.Primitive, error) {
+func (H *DefaultHandler) Serve(req *Request) (tview.Primitive, *Request, error) {
 	return H.handler(req)
 }
