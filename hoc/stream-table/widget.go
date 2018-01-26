@@ -1,26 +1,29 @@
 package streamtable
 
 import (
+	"sync"
+
 	"github.com/rivo/tview"
 	"github.com/verdverm/vermui"
 )
 
 type StreamTableSource func(chan string) chan interface{}
-type StreamTableFormatter func(interface{}) [][]string
+type StreamTableFormatter func(interface{}) [][]*tview.TableCell
 
 type StreamTable struct {
+	sync.Mutex
 	*tview.Table
 
-	TableHeader   [][]string
+	TableHeader   [][]*tview.TableCell
 	DataSource    StreamTableSource
 	DataFormatter StreamTableFormatter
 
-	DataStreamer chan interface{}
-	DataCommands chan string
-	QuitChan     chan string
+	dataCommands chan string
+	dataStreamer chan interface{}
+	quitChan     chan int
 }
 
-func NewStreamTable(header [][]string, source StreamTableSource, formatter StreamTableFormatter) *StreamTable {
+func NewStreamTable(header [][]*tview.TableCell, source StreamTableSource, formatter StreamTableFormatter) *StreamTable {
 	ST := &StreamTable{
 		Table:         tview.NewTable(),
 		TableHeader:   header,
@@ -28,56 +31,52 @@ func NewStreamTable(header [][]string, source StreamTableSource, formatter Strea
 		DataFormatter: formatter,
 	}
 
-	ST.QuitChan = make(chan string, 2)
-	ST.DataCommands = make(chan string, 2)
-
 	return ST
 }
 
-func (ST *StreamTable) Show() {
+func (ST *StreamTable) StartStream() {
 	// already shown
-	if ST.DataStreamer != nil {
+	if ST.dataStreamer != nil {
 		return
 	}
-	ST.DataStreamer = ST.DataSource(ST.DataCommands)
-	// first := true
+
+	ST.quitChan = make(chan int)
+	ST.dataCommands = make(chan string)
+	ST.dataStreamer = ST.DataSource(ST.dataCommands)
+
 	go func() {
 		for {
 			select {
-			case data := <-ST.DataStreamer:
+			case data := <-ST.dataStreamer:
 				ST.UpdateData(data)
 
-			case <-ST.QuitChan:
+			case <-ST.quitChan:
+				ST.dataCommands <- "quit"
+				close(ST.dataCommands)
+				close(ST.quitChan)
+				ST.quitChan = nil
+				ST.dataCommands = nil
+				ST.dataStreamer = nil
 				return
 			}
-			//if first {
-			//events.SendCustomEvent("/sys/redraw", "stable")
-			//first = false
-			//}
 		}
 	}()
-	// go events.SendCustomEvent("/sys/redraw", "stable")
 }
-func (ST *StreamTable) Hide() {
-	ST.DataCommands <- "quit"
-	ST.QuitChan <- "quit"
-	ST.DataStreamer = nil
-	// go events.SendCustomEvent("/sys/redraw", "stable")
+func (ST *StreamTable) StopStream() {
+	ST.quitChan <- 1
 }
 
 func (ST *StreamTable) UpdateData(input interface{}) {
 
 	data := ST.DataFormatter(input)
 
-	rows := [][]string{}
-	rows = append(rows, ST.TableHeader...)
-	rows = append(rows, data...)
+	cells := [][]*tview.TableCell{}
+	cells = append(cells, ST.TableHeader...)
+	cells = append(cells, data...)
 
-	for r := range rows {
-		for c := range rows[r] {
-			ST.Table.SetCell(r, c,
-				tview.NewTableCell(rows[r][c]).
-					SetAlign(tview.AlignCenter))
+	for r := range cells {
+		for c := range cells[r] {
+			ST.Table.SetCell(r, c, cells[r][c])
 		}
 	}
 

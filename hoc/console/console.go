@@ -39,6 +39,12 @@ func (D *DevConsoleWidget) Init() {
 		fmt.Fprintf(D, "[fuchsia]key %s[white]\n", str)
 	})
 
+	vermui.AddGlobalHandler("/sys/err", func(ev events.Event) {
+		err := ev.Data.(*events.EventError)
+		line := fmt.Sprintf("[%s] %v", ev.When().Format("2006-01-02 15:04:05"), err)
+		fmt.Fprintf(D, "[red]SYSTEM ERROR %v[white]\n", line)
+	})
+
 	vermui.AddGlobalHandler("/console", func(ev events.Event) {
 		d := ev.Data
 		switch t := ev.Data.(type) {

@@ -37,6 +37,8 @@ func Init() error {
 
 // blocking call
 func Start() error {
+
+	// catch panics, clean up, format error
 	defer func() {
 		e := recover()
 		if e != nil {
@@ -56,17 +58,15 @@ func Start() error {
 				io.WriteString(os.Stdout, p.BucketHeader(&bucket, false, len(buckets) > 1))
 				io.WriteString(os.Stdout, p.StackLines(&bucket.Signature, srcLen, pkgLen, false))
 			}
-			os.Exit(1)
+			panic(e)
 		}
 	}()
 
-	app.SetFocus(rootView)
-	app.SetRoot(rootView, true)
-
+	// start the event engine
 	go events.Start()
-	go events.SendCustomEvent("/console/debug", "App Starting")
 
 	// blocking
+	app.SetRoot(rootView, true)
 	return app.Run()
 }
 
@@ -106,8 +106,8 @@ func SetFocus(p tview.Primitive) {
 	app.Draw()
 }
 func Unfocus() {
-	cur := app.GetFocus()
-	cur.Blur()
+	// cur := app.GetFocus()
+	// cur.Blur()
 	app.Screen().HideCursor()
 
 	app.SetFocus(rootView)
