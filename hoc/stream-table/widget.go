@@ -1,9 +1,7 @@
 package streamtable
 
 import (
-	"sync"
-
-	"github.com/rivo/tview"
+	"github.com/verdverm/tview"
 	"github.com/verdverm/vermui"
 )
 
@@ -11,7 +9,6 @@ type StreamTableSource func(chan string) chan interface{}
 type StreamTableFormatter func(interface{}) [][]*tview.TableCell
 
 type StreamTable struct {
-	sync.Mutex
 	*tview.Table
 
 	TableHeader   [][]*tview.TableCell
@@ -35,6 +32,9 @@ func NewStreamTable(header [][]*tview.TableCell, source StreamTableSource, forma
 }
 
 func (ST *StreamTable) StartStream() {
+	ST.Lock()
+	defer ST.Unlock()
+
 	// already shown
 	if ST.dataStreamer != nil {
 		return
@@ -46,11 +46,16 @@ func (ST *StreamTable) StartStream() {
 
 	go func() {
 		for {
+			ST.Lock()
+			ds := ST.dataStreamer
+			ST.Unlock()
 			select {
-			case data := <-ST.dataStreamer:
+			case data := <-ds:
 				ST.UpdateData(data)
 
 			case <-ST.quitChan:
+				ST.Lock()
+				defer ST.Unlock()
 				ST.dataCommands <- "quit"
 				close(ST.dataCommands)
 				close(ST.quitChan)
@@ -68,17 +73,16 @@ func (ST *StreamTable) StopStream() {
 
 func (ST *StreamTable) UpdateData(input interface{}) {
 
+	ST.Lock()
 	data := ST.DataFormatter(input)
 
 	cells := [][]*tview.TableCell{}
 	cells = append(cells, ST.TableHeader...)
 	cells = append(cells, data...)
 
-	for r := range cells {
-		for c := range cells[r] {
-			ST.Table.SetCell(r, c, cells[r][c])
-		}
-	}
+	ST.Unlock()
+
+	ST.Table.SetCells(cells)
 
 	vermui.Draw()
 }

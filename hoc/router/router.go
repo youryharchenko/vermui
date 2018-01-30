@@ -2,7 +2,7 @@ package router
 
 import (
 	"github.com/pkg/errors"
-	"github.com/rivo/tview"
+	"github.com/verdverm/tview"
 
 	"github.com/verdverm/vermui"
 	"github.com/verdverm/vermui/events"
@@ -108,4 +108,5 @@ func (R *Router) SetActive(path string, context map[string]interface{}) {
 
 func (R *Router) setActive(layout tview.Primitive, context map[string]interface{}) {
 	R.Pages.SwitchToPage(layout.Id(), context)
+	vermui.Draw()
 }

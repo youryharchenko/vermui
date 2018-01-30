@@ -13,7 +13,7 @@ import (
 
 	"github.com/codemodus/kace"
 	"github.com/gdamore/tcell"
-	"github.com/rivo/tview"
+	"github.com/verdverm/tview"
 )
 
 type Event struct {
@@ -63,17 +63,11 @@ type EventCustom struct {
 	*tcell.EventInterrupt
 }
 
-var DefaultHandler = func(e Event) {}
-
-var sysEvtChs []chan Event
-
 func NewSysEvtCh() chan Event {
 	ec := make(chan Event, 0)
 	sysEvtChs = append(sysEvtChs, ec)
 	return ec
 }
-
-var customEventCh = make(chan Event, 256)
 
 func SendCustomEvent(path string, data interface{}) {
 	now := time.Now()
@@ -232,7 +226,7 @@ type EventStream struct {
 func NewEventStream() *EventStream {
 	return &EventStream{
 		srcMap:      make(map[string]chan Event),
-		stream:      make(chan Event),
+		stream:      make(chan Event, 256),
 		Handlers:    make(map[string]func(Event)),
 		sigStopLoop: make(chan Event),
 	}
@@ -303,6 +297,7 @@ func (es *EventStream) Loop() {
 			es.hook(e)
 		}
 	}
+
 }
 
 func (es *EventStream) StopLoop() {

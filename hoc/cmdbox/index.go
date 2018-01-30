@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/gdamore/tcell"
-	"github.com/rivo/tview"
+	"github.com/verdverm/tview"
 	"github.com/verdverm/vermui"
 	"github.com/verdverm/vermui/events"
 )
@@ -75,6 +75,8 @@ func (CB *CmdBoxWidget) Id() string {
 }
 
 func (CB *CmdBoxWidget) AddCommandCallback(command string, callback func([]string, map[string]interface{})) Command {
+	CB.Lock()
+	defer CB.Unlock()
 	c := &DefaultCommand{
 		Name:     command,
 		Usage:    command,
@@ -86,6 +88,8 @@ func (CB *CmdBoxWidget) AddCommandCallback(command string, callback func([]strin
 }
 
 func (CB *CmdBoxWidget) AddCommand(command Command) {
+	CB.Lock()
+	defer CB.Unlock()
 	// go events.SendCustomEvent("/console/info", "adding command: "+command.CommandName())
 	CB.commands[command.CommandName()] = command
 }
@@ -96,9 +100,13 @@ func (CB *CmdBoxWidget) RemoveCommand(command Command) {
 
 func (CB *CmdBoxWidget) Mount(context map[string]interface{}) error {
 	vermui.AddWidgetHandler(CB, "/sys/key/C-space", func(e events.Event) {
+		CB.Lock()
 		CB.curr = ""
 		CB.hIdx = len(CB.history)
+		CB.Unlock()
+
 		CB.SetText("")
+		CB.SetFieldTextColor(tcell.ColorWhite)
 		CB.SetBorderColor(tcell.Color69)
 
 		vermui.SetFocus(CB)
@@ -151,13 +159,19 @@ func (CB *CmdBoxWidget) Submit(command string, args []string) {
 	if len(command) == 0 {
 		return
 	}
+
+	CB.Lock()
 	CB.history = append(CB.history, command+" "+strings.Join(args, " "))
+	CB.Unlock()
+
 	command = strings.ToLower(command)
 	if command[:1] == "/" {
 		go events.SendCustomEvent("/router/dispatch", command)
 		return
 	}
+	CB.Lock()
 	cmd, ok := CB.commands[command]
+	CB.Unlock()
 	if !ok {
 		// render for the user
 		go events.SendCustomEvent("/user/error", fmt.Sprintf("unknown command %q", command))

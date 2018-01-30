@@ -11,7 +11,7 @@ import (
 	"regexp"
 
 	"github.com/pkg/errors"
-	"github.com/rivo/tview"
+	"github.com/verdverm/tview"
 )
 
 var (

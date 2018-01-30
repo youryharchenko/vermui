@@ -1,11 +1,19 @@
 package events
 
 import (
-	"github.com/rivo/tview"
+	"sync"
+
+	"github.com/verdverm/tview"
 )
 
 var defaultEventStream *EventStream
 var defaultWgtMgr WgtMgr
+var wgtMgrMuxtx sync.Mutex
+
+var DefaultHandler = func(e Event) {}
+
+var sysEvtChs []chan Event
+var customEventCh = make(chan Event, 256)
 
 func Init(app *tview.Application) error {
 	sysEvtChs = make([]chan Event, 0)

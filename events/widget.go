@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/rivo/tview"
+	"github.com/verdverm/tview"
 )
 
 // event mixins

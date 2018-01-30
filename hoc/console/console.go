@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/rivo/tview"
+	"github.com/verdverm/tview"
 
 	"github.com/verdverm/vermui"
 	"github.com/verdverm/vermui/events"

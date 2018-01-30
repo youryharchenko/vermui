@@ -1,7 +1,7 @@
 package mux
 
 import (
-	"github.com/rivo/tview"
+	"github.com/verdverm/tview"
 )
 
 type HandlerFunc func(*Request) (tview.Primitive, *Request, error)

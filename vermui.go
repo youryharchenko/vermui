@@ -6,14 +6,17 @@ import (
 	"io"
 	"os"
 	"runtime/debug"
+	"sync"
+	"time"
 
 	"github.com/maruel/panicparse/stack"
-	"github.com/rivo/tview"
+	"github.com/verdverm/tview"
 
 	"github.com/verdverm/vermui/events"
 )
 
 var app *tview.Application
+var appLock sync.RWMutex
 var rootView tview.Primitive
 
 // Init initializes vermui library. This function should be called before any others.
@@ -29,7 +32,7 @@ func Init() error {
 	events.AddGlobalHandler("/", events.DefaultHandler)
 
 	events.AddGlobalHandler("/sys/redraw", func(e events.Event) {
-		app.Draw()
+		Draw()
 	})
 
 	return nil
@@ -73,8 +76,19 @@ func Start() error {
 // Close finalizes vermui library,
 // should be called after successful initialization when vermui's functionality isn't required anymore.
 func Stop() error {
-	// err := events.Stop()
-	return app.Stop()
+	//appLock.Lock()
+	//defer appLock.Unlock()
+
+	fmt.Println("GOT HERE - STOP")
+	app.Stop()
+	err := events.Stop()
+	if err != nil {
+		return err
+	}
+	time.Sleep(time.Millisecond * 500)
+	app.Stop()
+	fmt.Println("GOT HERE - STOP 2")
+	return nil
 }
 
 func Application() *tview.Application {
@@ -82,11 +96,25 @@ func Application() *tview.Application {
 }
 
 func Draw() {
-	app.Draw()
+	appLock.RLock()
+	defer appLock.RUnlock()
+
+	go app.Draw()
 }
 
 func Clear() {
-	app.Screen().Clear()
+	//appLock.Lock()
+	//defer appLock.Unlock()
+
+	if app == nil {
+		// really shouldn't get here, but the event stream is still running
+		return
+	}
+	screen := app.Screen()
+	if screen != nil {
+		screen.Clear()
+		screen.Sync()
+	}
 }
 
 func GetRootView() tview.Primitive {
@@ -98,20 +126,37 @@ func SetRootView(v tview.Primitive) {
 }
 
 func GetFocus() (p tview.Primitive) {
+	//appLock.RLock()
+	//defer appLock.RLock()
+
 	return app.GetFocus()
 }
 
 func SetFocus(p tview.Primitive) {
+	//appLock.Lock()
+	//defer appLock.Unlock()
+
+	if app == nil {
+		// really shouldn't get here, but the event stream is still running
+		return
+	}
+
+	// go app.Screen().HideCursor()
 	app.SetFocus(p)
-	app.Draw()
+	Draw()
 }
 func Unfocus() {
-	// cur := app.GetFocus()
-	// cur.Blur()
-	app.Screen().HideCursor()
+	//appLock.Lock()
+	//defer appLock.Unlock()
 
+	if app == nil {
+		// really shouldn't get here, but the event stream is still running
+		return
+	}
+
+	// go app.Screen().HideCursor()
 	app.SetFocus(rootView)
-	app.Draw()
+	Draw()
 }
 
 func AddGlobalHandler(path string, handler func(events.Event)) {
