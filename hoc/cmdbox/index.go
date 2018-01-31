@@ -112,15 +112,6 @@ func (CB *CmdBoxWidget) Mount(context map[string]interface{}) error {
 		vermui.SetFocus(CB)
 	})
 
-	vermui.AddWidgetHandler(CB, "/user/error", func(e events.Event) {
-		str := fmt.Sprintf("%v", e.Data.(*events.EventCustom).Data())
-		CB.SetBorderColor(tcell.ColorRed)
-		CB.SetFieldTextColor(tcell.ColorOrange)
-		CB.SetText(str)
-
-		vermui.Unfocus()
-	})
-
 	CB.SetFinishedFunc(func(key tcell.Key) {
 		switch key {
 		case tcell.KeyEnter:
@@ -150,7 +141,6 @@ func (CB *CmdBoxWidget) Mount(context map[string]interface{}) error {
 }
 func (CB *CmdBoxWidget) Unmount() error {
 	vermui.RemoveWidgetHandler(CB, "/sys/key/C-space")
-	vermui.RemoveWidgetHandler(CB, "/user/error")
 
 	return nil
 }
@@ -173,6 +163,7 @@ func (CB *CmdBoxWidget) Submit(command string, args []string) {
 	cmd, ok := CB.commands[command]
 	CB.Unlock()
 	if !ok {
+		vermui.Unfocus()
 		// render for the user
 		go events.SendCustomEvent("/user/error", fmt.Sprintf("unknown command %q", command))
 		// log to console
