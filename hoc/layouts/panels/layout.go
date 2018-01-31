@@ -1,17 +1,18 @@
-// DashAndPanels Layout is a Flex widget with
+// Panels Layout is a Flex widget with
 // hidable panels and a main content.
 // Can be vert or horz oriendted throught the Flex widget.
-// Panels can be jumped to with <hotkey> and hidden with <shift>-<hotkey>
-// Recommend making the <hotkey> an: '<alt>-<key>' and hidden will be '<shift>-<alt>-<key>'
+// Panels can be jumped to with <focuskey> and hidden with <shift>-<focuskey>
+// Recommend making the <focuskey> an: '<alt>-<key>' and hidden will be '<shift>-<alt>-<key>'
 // Normal movement and interaction keys within the focussed panel.
 //
 // main (middle) panel, can be anything, including...
 // - the router (when this is the root view)
 // - another DashAndPanels
 // - a pager, grid, or any other primitive
-package dashnpanels
+package panels
 
 import (
+	"fmt"
 	"sort"
 
 	"github.com/verdverm/tview"
@@ -25,71 +26,76 @@ type Panel struct {
 	FixedSize  int
 	Proportion int
 	Focus      int
+	FocusKey   string
 	Hidden     bool
-	HotKey     string
+	HiddenKey  string
 }
 
 type Layout struct {
 	*tview.Flex
 
 	// first (left/top) panels, can be almost anything and hidden.
-	fPanels map[string]Panel
+	fPanels map[string]*Panel
 
 	// main (middle) panel, can be anything, I think.
-	mPanel Panel
+	mPanel *Panel
 
 	// last (right/bottom) panels, can be almost anything and hidden.
-	lPanels map[string]Panel
+	lPanels map[string]*Panel
 }
 
 func New() *Layout {
 	L := &Layout{
 		Flex:    tview.NewFlex(),
-		fPanels: map[string]Panel{},
-		lPanels: map[string]Panel{},
+		fPanels: map[string]*Panel{},
+		lPanels: map[string]*Panel{},
 	}
 
 	return L
 }
 
 // AddFirstPanel adds a Panel to the left or top, depending on orientation.
-func (L *Layout) AddFirstPanel(name string, item tview.Primitive, fixedSize, proportion, focus int, hidden bool, hotkey string) {
-	panel := Panel{
+func (L *Layout) AddFirstPanel(name string, item tview.Primitive, fixedSize, proportion,
+	focus int, focuskey string, hidden bool, hiddenkey string) {
+	panel := &Panel{
 		Name:       name,
 		Item:       item,
 		FixedSize:  fixedSize,
 		Proportion: proportion,
 		Focus:      focus,
+		FocusKey:   focuskey,
 		Hidden:     hidden,
-		HotKey:     hotkey,
+		HiddenKey:  hiddenkey,
 	}
 
 	L.fPanels[name] = panel
 }
 
 // AddLastPanel adds a Panel to the right or bottom, depending on orientation.
-func (L *Layout) AddLastPanel(name string, item tview.Primitive, fixedSize, proportion, focus int, hidden bool, hotkey string) {
-	panel := Panel{
+func (L *Layout) AddLastPanel(name string, item tview.Primitive, fixedSize, proportion,
+	focus int, focuskey string, hidden bool, hiddenkey string) {
+	panel := &Panel{
 		Name:       name,
 		Item:       item,
 		FixedSize:  fixedSize,
 		Proportion: proportion,
 		Focus:      focus,
+		FocusKey:   focuskey,
 		Hidden:     hidden,
-		HotKey:     hotkey,
+		HiddenKey:  hiddenkey,
 	}
 
 	L.lPanels[name] = panel
 }
 
-func (L *Layout) SetMainPanel(name string, item tview.Primitive, fixedSize, proportion, focus int, hotkey string) {
-	panel := Panel{
+func (L *Layout) SetMainPanel(name string, item tview.Primitive, fixedSize, proportion, focus int, focuskey string) {
+	panel := &Panel{
 		Name:       name,
 		Item:       item,
 		FixedSize:  fixedSize,
 		Proportion: proportion,
 		Focus:      focus,
-		HotKey:     hotkey,
+		FocusKey:   focuskey,
 	}
 
 	L.mPanel = panel
@@ -109,29 +115,57 @@ func (L *Layout) Mount(context map[string]interface{}) error {
 		}
 	}
 
-	// Setup hotkeys
+	// Setup focuskeys
 	for _, panel := range L.fPanels {
-		if panel.HotKey != "" {
+		if panel.FocusKey != "" {
 			localPanel := panel
-			vermui.AddWidgetHandler(L, "/sys/key/"+localPanel.HotKey, func(e events.Event) {
+			vermui.AddWidgetHandler(L, "/sys/key/"+localPanel.FocusKey, func(e events.Event) {
 				go events.SendCustomEvent("/console/trace", "Focus: "+localPanel.Name)
 				vermui.SetFocus(localPanel.Item)
 			})
 		}
+		if panel.HiddenKey != "" {
+			localPanel := panel
+			vermui.AddWidgetHandler(L, "/sys/key/"+localPanel.HiddenKey, func(e events.Event) {
+				localPanel.Hidden = !localPanel.Hidden
+				go events.SendCustomEvent("/console/trace", fmt.Sprintf("Hidden: %s (%v)", localPanel.Name, localPanel.Hidden))
+				L.build()
+				if localPanel.Hidden {
+					vermui.SetFocus(L.mPanel.Item)
+				} else {
+					vermui.SetFocus(localPanel.Item)
+				}
+				vermui.Draw()
+			})
+		}
 	}
-	if L.mPanel.HotKey != "" {
+	if L.mPanel.FocusKey != "" {
 		localPanel := L.mPanel
-		vermui.AddWidgetHandler(L, "/sys/key/"+localPanel.HotKey, func(e events.Event) {
+		vermui.AddWidgetHandler(L, "/sys/key/"+localPanel.FocusKey, func(e events.Event) {
 			go events.SendCustomEvent("/console/trace", "Focus: "+localPanel.Name)
 			vermui.SetFocus(localPanel.Item)
 		})
 	}
-	for _, panel := range L.fPanels {
-		if panel.HotKey != "" {
+	for _, panel := range L.lPanels {
+		if panel.FocusKey != "" {
 			localPanel := panel
-			vermui.AddWidgetHandler(L, "/sys/key/"+localPanel.HotKey, func(e events.Event) {
+			vermui.AddWidgetHandler(L, "/sys/key/"+localPanel.FocusKey, func(e events.Event) {
 				go events.SendCustomEvent("/console/trace", "Focus: "+localPanel.Name)
 				vermui.SetFocus(localPanel.Item)
+			})
+		}
+		if panel.HiddenKey != "" {
+			localPanel := panel
+			vermui.AddWidgetHandler(L, "/sys/key/"+localPanel.HiddenKey, func(e events.Event) {
+				localPanel.Hidden = !localPanel.Hidden
+				go events.SendCustomEvent("/console/trace", fmt.Sprintf("Hidden: %s (%v)", localPanel.Name, localPanel.Hidden))
+				L.build()
+				if localPanel.Hidden {
+					vermui.SetFocus(L.mPanel.Item)
+				} else {
+					vermui.SetFocus(localPanel.Item)
+				}
+				vermui.Draw()
 			})
 		}
 	}
@@ -141,7 +175,7 @@ func (L *Layout) Mount(context map[string]interface{}) error {
 
 func (L *Layout) build() error {
 	// get and order the fPanels
-	fPs := []Panel{}
+	fPs := []*Panel{}
 	for _, panel := range L.fPanels {
 		if panel.Hidden {
 			continue
@@ -153,7 +187,7 @@ func (L *Layout) build() error {
 	})
 
 	// get and order the lPanels
-	lPs := []Panel{}
+	lPs := []*Panel{}
 	for _, panel := range L.lPanels {
 		if panel.Hidden {
 			continue
