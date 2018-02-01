@@ -119,6 +119,7 @@ func (r *Router) Serve(req *Request) (tview.Primitive, *Request, error) {
 		req = setVars(req, match.Vars)
 		req = setCurrentRoute(req, match.Route)
 	}
+	// fmt.Printf("\n\n\n\nMatch !!!\n\n%+v\n\n%+v\n\n", req, match)
 
 	if handler == nil {
 		handler = r.NotFoundHandler

@@ -58,14 +58,12 @@ func New() *CmdBoxWidget {
 	cb := &CmdBoxWidget{
 		InputField: tview.NewInputField(),
 		commands:   make(map[string]Command),
-		history:    []string{"acct x", "acct p", "coin USDT XRP", "coin USDT BTC", "coin USDT ETH"},
+		history:    []string{},
 	}
 
 	cb.InputField.
 		SetFieldBackgroundColor(tview.Styles.PrimitiveBackgroundColor).
 		SetLabel(" ")
-
-	cb.Mount(nil)
 
 	return cb
 }
@@ -99,7 +97,7 @@ func (CB *CmdBoxWidget) RemoveCommand(command Command) {
 }
 
 func (CB *CmdBoxWidget) Mount(context map[string]interface{}) error {
-	vermui.AddWidgetHandler(CB, "/sys/key/C-space", func(e events.Event) {
+	vermui.AddWidgetHandler(CB, "/sys/key/C-<space>", func(e events.Event) {
 		CB.Lock()
 		CB.curr = ""
 		CB.hIdx = len(CB.history)
@@ -109,7 +107,7 @@ func (CB *CmdBoxWidget) Mount(context map[string]interface{}) error {
 		CB.SetFieldTextColor(tcell.ColorWhite)
 		CB.SetBorderColor(tcell.Color69)
 
-		vermui.SetFocus(CB)
+		vermui.SetFocus(CB.InputField)
 	})
 
 	CB.SetFinishedFunc(func(key tcell.Key) {
@@ -151,7 +149,11 @@ func (CB *CmdBoxWidget) Submit(command string, args []string) {
 	}
 
 	CB.Lock()
-	CB.history = append(CB.history, command+" "+strings.Join(args, " "))
+	if len(args) == 0 {
+		CB.history = append(CB.history, command)
+	} else {
+		CB.history = append(CB.history, command+" "+strings.Join(args, " "))
+	}
 	CB.Unlock()
 
 	command = strings.ToLower(command)
@@ -201,7 +203,9 @@ func (CB *CmdBoxWidget) InputHandler() func(tcell.Event, func(tview.Primitive)) 
 				if CB.hIdx < 0 {
 					CB.hIdx = 0
 				}
-				CB.SetText(CB.history[CB.hIdx])
+				if len(CB.history) > 0 {
+					CB.SetText(CB.history[CB.hIdx])
+				}
 
 			// Downwards, more recent in history
 			case tcell.KeyEnd:
@@ -220,7 +224,9 @@ func (CB *CmdBoxWidget) InputHandler() func(tcell.Event, func(tview.Primitive)) 
 					CB.SetText(CB.curr)
 					return
 				}
-				CB.SetText(CB.history[CB.hIdx])
+				if len(CB.history) > 0 {
+					CB.SetText(CB.history[CB.hIdx])
+				}
 
 			// Default is to pass through to InputField handler
 			default:

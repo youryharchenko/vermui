@@ -149,6 +149,9 @@ func eventKey(e *tcell.EventKey) (tk EventKey) {
 	if strings.HasPrefix(key, "Ctrl-") {
 		key = strings.TrimPrefix(key, "Ctrl-")
 		key = kace.Kebab(key)
+		if key == "space" {
+			key = "<space>"
+		}
 	} else {
 		key = "<" + kace.Kebab(key) + ">"
 	}
@@ -293,6 +296,7 @@ func (es *EventStream) Loop() {
 				es.Handlers[pattern](a)
 			}
 		}(e)
+
 		if es.hook != nil {
 			es.hook(e)
 		}

@@ -7,7 +7,6 @@ import (
 	"os"
 	"runtime/debug"
 	"sync"
-	"time"
 
 	"github.com/maruel/panicparse/stack"
 	"github.com/verdverm/tview"
@@ -68,6 +67,11 @@ func Start() error {
 	// start the event engine
 	go events.Start()
 
+	err := rootView.Mount(nil)
+	if err != nil {
+		panic(err)
+	}
+
 	// blocking
 	app.SetRoot(rootView, true)
 	return app.Run()
@@ -79,15 +83,11 @@ func Stop() error {
 	//appLock.Lock()
 	//defer appLock.Unlock()
 
-	fmt.Println("GOT HERE - STOP")
 	app.Stop()
 	err := events.Stop()
 	if err != nil {
 		return err
 	}
-	time.Sleep(time.Millisecond * 500)
-	app.Stop()
-	fmt.Println("GOT HERE - STOP 2")
 	return nil
 }
 

@@ -25,26 +25,14 @@ func NewDevConsoleWidget() *DevConsoleWidget {
 
 	textView.SetTitle(" console ").SetBorder(true)
 
-	c := &DevConsoleWidget{
+	C := &DevConsoleWidget{
 		TextView: textView,
 	}
 
-	return c
+	return C
 }
 
-func (D *DevConsoleWidget) Init() {
-	// capture all key strokes and print
-	vermui.AddGlobalHandler("/console/key", func(ev events.Event) {
-		str := ev.Data.(*events.EventCustom).Data()
-		fmt.Fprintf(D, "[fuchsia]key %s[white]\n", str)
-	})
-
-	vermui.AddGlobalHandler("/sys/err", func(ev events.Event) {
-		err := ev.Data.(*events.EventError)
-		line := fmt.Sprintf("[%s] %v", ev.When().Format("2006-01-02 15:04:05"), err)
-		fmt.Fprintf(D, "[red]SYSTEM ERROR %v[white]\n", line)
-	})
-
+func (C *DevConsoleWidget) Mount(context map[string]interface{}) error {
 	vermui.AddGlobalHandler("/console", func(ev events.Event) {
 		d := ev.Data
 		switch t := ev.Data.(type) {
@@ -56,7 +44,7 @@ func (D *DevConsoleWidget) Init() {
 		line := fmt.Sprintf("[%s] %v", ev.When().Format("2006-01-02 15:04:05"), d)
 
 		level := strings.TrimPrefix(ev.Path, "/console/")
-		if level[:4] == "colo" {
+		if len(level) > 6 && level[:6] == "color-" {
 			color := level[6:]
 			line = fmt.Sprintf("[%s]%.5s  %s[white]", color, color, line)
 		} else {
@@ -76,7 +64,14 @@ func (D *DevConsoleWidget) Init() {
 			}
 		}
 
-		fmt.Fprintln(D, line)
-		D.ScrollToEnd()
+		fmt.Fprintln(C, line)
+		C.ScrollToEnd()
 	})
+
+	return nil
+}
+
+func (C *DevConsoleWidget) Unmount() error {
+	vermui.RemoveWidgetHandler(C, "/console")
+	return nil
 }

@@ -107,16 +107,9 @@ func (L *Layout) Mount(context map[string]interface{}) error {
 		return err
 	}
 
-	items := L.GetItems()
-	for _, item := range items {
-		err := item.Item.Mount(context)
-		if err != nil {
-			return err
-		}
-	}
-
 	// Setup focuskeys
 	for _, panel := range L.fPanels {
+		panel.Item.Mount(context)
 		if panel.FocusKey != "" {
 			localPanel := panel
 			vermui.AddWidgetHandler(L, "/sys/key/"+localPanel.FocusKey, func(e events.Event) {
@@ -140,6 +133,7 @@ func (L *Layout) Mount(context map[string]interface{}) error {
 		}
 	}
 	if L.mPanel.FocusKey != "" {
+		L.mPanel.Item.Mount(context)
 		localPanel := L.mPanel
 		vermui.AddWidgetHandler(L, "/sys/key/"+localPanel.FocusKey, func(e events.Event) {
 			go events.SendCustomEvent("/console/trace", "Focus: "+localPanel.Name)
@@ -147,6 +141,7 @@ func (L *Layout) Mount(context map[string]interface{}) error {
 		})
 	}
 	for _, panel := range L.lPanels {
+		panel.Item.Mount(context)
 		if panel.FocusKey != "" {
 			localPanel := panel
 			vermui.AddWidgetHandler(L, "/sys/key/"+localPanel.FocusKey, func(e events.Event) {
@@ -203,14 +198,14 @@ func (L *Layout) build() error {
 	L.Flex = tview.NewFlex().SetDirection(orient)
 
 	for _, p := range fPs {
-		L.AddItem(p.Item, p.FixedSize, p.Proportion, p.Focus >= 0)
+		L.AddItem(p.Item, p.FixedSize, p.Proportion, false)
 	}
 
 	p := L.mPanel
-	L.AddItem(p.Item, p.FixedSize, p.Proportion, p.Focus >= 0)
+	L.AddItem(p.Item, p.FixedSize, p.Proportion, true)
 
 	for _, p := range lPs {
-		L.AddItem(p.Item, p.FixedSize, p.Proportion, p.Focus >= 0)
+		L.AddItem(p.Item, p.FixedSize, p.Proportion, false)
 	}
 
 	return nil

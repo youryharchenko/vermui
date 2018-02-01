@@ -31,7 +31,7 @@ func New() *Router {
 		iRouter: mux.NewRouter(),
 	}
 
-	vermui.AddWidgetHandler(r, "/router/dispatch", func(ev events.Event) {
+	vermui.AddWidgetHandler(r.Pages, "/router/dispatch", func(ev events.Event) {
 		path := ev.Data.(*events.EventCustom).Data().(string)
 		context := map[string]interface{}{
 			"activation": "dispatch",
