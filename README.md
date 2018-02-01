@@ -1,4 +1,4 @@
-# VermUI - A termbox UI framework modelled after React/Redux.
+# VermUI - A terminal UI framework inspired by React.
 
 [![Build Status](https://travis-ci.org/verdverm/vermui.svg?branch=master)](https://travis-ci.org/verdverm/vermui)
 [![Doc Status](https://godoc.org/github.com/verdverm/vermui?status.png)](https://godoc.org/github.com/verdverm/vermui)
