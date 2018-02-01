@@ -2,7 +2,8 @@
 
 [![Build Status](https://travis-ci.org/verdverm/vermui.svg?branch=master)](https://travis-ci.org/verdverm/vermui)
 [![Doc Status](https://godoc.org/github.com/verdverm/vermui?status.png)](https://godoc.org/github.com/verdverm/vermui)
-Version 1.0.0-RC1
+
+V1.0.0-RC1
 
 ```
 go get -u github.com/verdverm/vermui
