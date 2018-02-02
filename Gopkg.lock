@@ -23,14 +23,14 @@
   revision = "b23993cbb6353f0e6aa98d0ee318a34728f628b9"
 
 [[projects]]
+  branch = "master"
   name = "github.com/gdamore/tcell"
   packages = [
     ".",
     "terminfo"
   ]
-  revision = "061d51a604c546b48e92253cb65190d76cecf4c6"
+  revision = "1ea54695c04e18b1983250637a79cf9af0d2909c"
   source = "github.com/verdverm/tcell"
-  version = "v1.0.0"
 
 [[projects]]
   name = "github.com/google/uuid"
@@ -66,7 +66,7 @@
   branch = "master"
   name = "github.com/verdverm/tview"
   packages = ["."]
-  revision = "e37f898f65aa33c7e6190e253f32fe79b0c3113d"
+  revision = "6ee20f9eb57759a33b44f9c4daa7303234789d5c"
 
 [[projects]]
   branch = "master"
@@ -83,6 +83,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "4b300b6d8497c020c9182f84e65fa2fbc1c51e9e3d587083756d3faf49fc6284"
+  inputs-digest = "4adf321da29264fd0c8ff10b56fa1c0cd6aef46c170abe555120e7c0f005877c"
   solver-name = "gps-cdcl"
   solver-version = 1

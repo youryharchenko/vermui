@@ -34,17 +34,17 @@
   version = "1.1.0"
 
 [[constraint]]
-  name = "github.com/gdamore/tcell"
-  version = "1.0.0"
-  source = "github.com/verdverm/tcell"
-
-[[constraint]]
   name = "github.com/maruel/panicparse"
   version = "1.0.2"
 
 [[constraint]]
   name = "github.com/pkg/errors"
   version = "0.8.0"
+
+[[constraint]]
+  name = "github.com/gdamore/tcell"
+  branch = "master"
+  source = "github.com/verdverm/tcell"
 
 [[constraint]]
   branch = "master"
